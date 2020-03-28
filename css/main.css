@@ -2,7 +2,7 @@ body{
     font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     background-color: 	#f8f8ff;
     margin:0;
-    /**background-image:url("/images/Mbacking.png");**/
+    background-image:url("/images/oriental-tiles.png");
 }
 #setupBox{
     overflow:auto;
@@ -69,3 +69,27 @@ body{
     box-shadow: 0px 1px;
     background-color: white;
 }
+
+#loginBox{
+    overflow:auto;
+    position: absolute;
+    width: 40rem;
+    
+    /*height: 18rem;*/
+    top: calc(50% - 9rem);    
+    left: calc(50% - 20rem);
+    background-color: white;
+    border-radius: 0.8rem;
+    box-shadow: 1px 2px 10px grey;
+    display: flex;
+    flex-direction: column;
+
+}
+
+#loginForm {
+    margin-top: 0.35rem;
+    margin-bottom: 0.35rem;
+}
+#loginForm > *{
+    margin-top: 0.4rem;
+} 

@@ -4,6 +4,8 @@ const mysql = require("mysql");
 const fs = require("fs");
 
 var dbAccess = 0;
+var socketUsers = [];
+
 var dbDetailsPage = {
     html:"",
     scripts:["/scripts/dbSetup.js"]
@@ -12,13 +14,17 @@ var rootUserPage = {
     html:"",
     scripts:["/scripts/RuserSetup.js"]
 }
+var loginPage = {
+    html:"",
+    scripts:["/scripts/login.js"]
+}
 
 var DBdata = {
-    hName:undefined,
-    uName:undefined,
-    pass:undefined,
-    port:undefined,
-    dbName:undefined
+    hName:"",
+    uName:"",
+    pass:"",
+    port:"",
+    dbName:""
 }
 
 function newConnection(){
@@ -37,7 +43,11 @@ function checkUserTable(con,callback){
             dbAccess = 1;
             callback();
         }else{
-            dbAccess = 2;
+            if(result.length==1){
+                dbAccess = 2;
+            }else{
+                dbAccess = 1;
+            }
             callback();
         }
         con.end();
@@ -45,15 +55,22 @@ function checkUserTable(con,callback){
 }
 
 function testConnection(callback){
-    var con = newConnection();
-    con.connect(er=>{
-        if(er){
-            dbAccess=0;
-            callback()
-        }else{
-            checkUserTable(con,callback);
-        }
-    });
+    if(validateEmpty(DBdata,5)==true){
+        var con = newConnection();
+        con.connect((er,result)=>{
+            if(er){
+                dbAccess=0;
+                callback()
+            }else{
+                console.log;
+                checkUserTable(con,callback);
+            }
+        });
+    }
+    else{
+        dbAccess=0;
+        callback();
+    }
 }
 
 fs.readFile("dbCredentials.json",(er,data)=>{
@@ -63,6 +80,13 @@ fs.readFile("dbCredentials.json",(er,data)=>{
         testConnection(()=>{
             console.log("DB-"+dbAccess+" Credentials -- Loaded ✓");
         });
+    }
+});
+fs.readFile(__dirname+"/serverFiles/loginPage.html","utf8",(er,data)=>{
+    if(er)throw er;
+    else{
+        loginPage.html = data;
+        console.log("Login page -- Loaded ✓");
     }
 });
 fs.readFile(__dirname+"/serverFiles/dbSetup.html","utf8",(er,data)=>{
@@ -121,16 +145,17 @@ function createUser(userData,socket){
                 createUserTable(con,socket,userData);  
             }
             else{    
-                let sql = "INSERT INTO userInfo (username,password,permissions) VALUES ('"+userData[0]+"','"+userData[1]+"','"+userData[2]+"')";
+                let sql = "INSERT INTO userInfo (username,password,permissions) VALUES ('"+userData.user+"','"+userData.pass+"','"+userData.permissions+"')";
                 con.query(sql,(err,result)=>{
                     if(err){
                         console.error("Unable to create user");
-                        con.end;
+                        con.end();
                     }
                     else{
-                        console.log("User: "+userData[0]+" Permissions: "+userData[2]+" Created!");
+                        console.log("User: "+userData.user+" Permissions: "+userData.permissions+" Created!");
                         con.end();
                         dbAccess = 2;
+                        Plogin(socket);
                     }
                 });
             }
@@ -165,7 +190,7 @@ function PclientDB(socket){
                         PrUserDB(socket);
                         break;
                     case 2:
-                        console.log("Woop");
+                        Plogin(socket);
                         break;
                 }
             });
@@ -176,24 +201,64 @@ function PclientDB(socket){
 function PrUserDB(socket){
     socket.emit("connectClient",{code:dbAccess,template:rootUserPage.html,scripts:rootUserPage.scripts});
     socket.on("newUser",data=>{
-        if(validateEmpty(data,2)==false){
+        data.permissions = "root";
+        if(validateEmpty(data,3)==false){
             socket.emit("refresh","Please Fill in all fields");
         }else{
+            createUser(data,socket);
+        }
+    });
+}
 
+function getIndex(socketid){
+    return socketUsers.findIndex(el=>el.socketID==socketid);
+}
+
+function verifyLogin(loginData,socket){
+    var con = newConnection();
+    let sql = "SELECT username, permissions FROM userInfo WHERE username = '"+loginData.username+"' and password = '"+loginData.password+"'";
+    con.query(sql,(err,result)=>{
+      if(err)throw err //?
+      if(result.length==0){
+        socket.emit("refresh","Incorrect Login Details");
+        con.end();
+      }
+      else {
+          socketUsers[getIndex(socket.id)].user = result.username;
+          socketUsers[getIndex(socket.id)].permissions = result.permissions;
+          con.end();
+      }
+    });
+  }
+
+function Plogin(socket){
+    socket.emit("connectClient",{code:dbAccess,template:loginPage.html,scripts:loginPage.scripts});
+    socket.on("loginUser",data=>{
+        if(validateEmpty(data,2)==true){
+            verifyLogin(data,socket);
+        }else{
+            socket.emit("refresh","Please fill in all fields")
         }
     });
 }
 
 admin.on("connection",(socket)=>{
-    console.log("Admin page connection");
-    switch(dbAccess){
-        case 0:
-            PclientDB(socket);
-            break;
-        case 1:
-            PrUserDB(socket);
-            break;
-        case 2:
-            break;
-    }
+    socketUsers.push({socketID:socket.id});
+    testConnection(()=>{
+        console.log("Admin page connection");
+        switch(dbAccess){
+            case 0:
+                PclientDB(socket);
+                break;
+            case 1:
+                PrUserDB(socket);
+                break;
+            case 2:
+                Plogin(socket);
+                break;
+        }
+    });
+    socket.on('disconnect',()=>{
+        socketUsers = socketUsers.filter(el=>el.socketID!=socket.id);
+    });
 });
