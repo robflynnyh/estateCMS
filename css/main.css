@@ -1,0 +1,71 @@
+body{
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    background-color: 	#f8f8ff;
+    margin:0;
+    /**background-image:url("/images/Mbacking.png");**/
+}
+#setupBox{
+    overflow:auto;
+    position: absolute;
+    width: 40rem;
+    
+    /*height: 18rem;*/
+    top: calc(50% - 9rem);    
+    left: calc(50% - 20rem);
+    background-color: white;
+    border-radius: 0.8rem;
+    box-shadow: 1px 2px 10px grey;
+    display: flex;
+    flex-direction: column;
+
+}
+#titleBox{
+    align-self: center;
+    font-weight: 900;
+    font-size: 1.1em;
+    margin-top: 1rem;
+}
+#info{
+    margin-top: 0.5rem;
+    align-self: center;
+}
+#setupForm {
+    margin-top: 0.35rem;
+    margin-bottom: 0.35rem;
+}
+#setupForm > *{
+    margin-top: 0.4rem;
+} 
+#submission{
+    width:80%;
+    margin: 0 auto;
+    text-align: end;
+    margin-top:0.5rem;
+}
+#submission #sButton{
+    width:20%;
+    font-weight: 700;
+    border-radius: 0.2rem;
+}
+.formBox{
+    width:80%;
+    margin:0 auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+.formBox .formField{
+    border: 1px solid grey;
+    border-radius: 0.3rem;
+}
+#topBox{
+    position: absolute;
+    top:0;
+    left:0;
+    font-size: large;
+    padding:0.2rem;
+    padding-left: 3rem;
+    padding-right: 3rem;
+    box-shadow: 0px 1px;
+    background-color: white;
+}

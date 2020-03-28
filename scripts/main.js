@@ -1,5 +1,18 @@
 var socket = io("/admin");
 
-socket.on("connectClient",response=>{
+function PdbDetails(template){
+    console.log(template);
+    $("#content").html(template);
+}
 
+socket.on("connectClient",response=>{
+    switch(response.code){
+        case 0:
+            PdbDetails(response.template);
+            break;
+        case 1:
+            break;
+        case 2:
+            break;
+    }
 });
