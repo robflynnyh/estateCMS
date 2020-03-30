@@ -18,6 +18,10 @@ var loginPage = {
     html:"",
     scripts:["/scripts/login.js"]
 }
+var dashBoardPage = {
+    html:"",
+    scripts:["/scripts/dashClient.js","/scripts/dash.js"]
+}
 
 var DBdata = {
     hName:"",
@@ -43,7 +47,7 @@ function checkUserTable(con,callback){
             dbAccess = 1;
             callback();
         }else{
-            if(result.length==1){
+            if(result.length>0){
                 dbAccess = 2;
             }else{
                 dbAccess = 1;
@@ -103,6 +107,13 @@ fs.readFile(__dirname+"/serverFiles/userSetup.html","utf8",(er,data)=>{
         console.log("Setup page -- Loaded ✓");
     }
 });
+fs.readFile(__dirname+"/serverFiles/dashboard.html","utf8",(er,data)=>{
+    if(er)throw er;
+    else{
+        dashBoardPage.html = data;
+        console.log("Dashboard page -- Loaded ✓");
+    }
+});
 ///
 app.get("/admin",(req,res,nxt)=>{
     res.sendFile(__dirname+"/admin/main.html");
@@ -124,7 +135,7 @@ function buildDBcredFile(){
     });
 }
 function createUserTable(con,socket,userdata){
-    let sql="CREATE TABLE userINFO(userID int NOT NULL AUTO_INCREMENT PRIMARY KEY, username varchar(255) NOT NULL, password varchar(255) NOT NULL, permissions varchar(255) NOT NULL)";
+    let sql="CREATE TABLE userINFO(userID int NOT NULL AUTO_INCREMENT PRIMARY KEY, username varchar(255) NOT NULL UNIQUE, password varchar(255) NOT NULL, permissions varchar(255) NOT NULL)";
     con.query(sql,(err,result)=>{
         if(err)throw err;
         con.end();
@@ -190,6 +201,7 @@ function PclientDB(socket){
                         PrUserDB(socket);
                         break;
                     case 2:
+                        buildDBcredFile();
                         Plogin(socket);
                         break;
                 }
@@ -214,7 +226,7 @@ function getIndex(socketid){
     return socketUsers.findIndex(el=>el.socketID==socketid);
 }
 
-function verifyLogin(loginData,socket){
+function verifyLogin(loginData,socket,callback){
     var con = newConnection();
     let sql = "SELECT username, permissions FROM userInfo WHERE username = '"+loginData.username+"' and password = '"+loginData.password+"'";
     con.query(sql,(err,result)=>{
@@ -222,20 +234,62 @@ function verifyLogin(loginData,socket){
       if(result.length==0){
         socket.emit("refresh","Incorrect Login Details");
         con.end();
+        callback(false);
       }
       else {
-          socketUsers[getIndex(socket.id)].user = result.username;
-          socketUsers[getIndex(socket.id)].permissions = result.permissions;
+          socketUsers[getIndex(socket.id)].user = result[0].username;
+          socketUsers[getIndex(socket.id)].permissions = result[0].permissions;
+          console.log(socketUsers[getIndex(socket.id)]);
           con.end();
+          callback(true);
       }
     });
   }
 
+function Pdash(socket){
+    socket.on("getUsers",()=>{
+        if(socketUsers[getIndex(socket.id)].permissions == "root"){
+            console.log(socketUsers[getIndex(socket.id)]); /////////////////
+            let con = newConnection();
+            let sql = "SELECT username, permissions FROM userInfo";
+            con.query(sql,(err,result)=>{
+                if(err)throw err //?
+                else {
+                    socket.emit("usersReturned",result);
+                    con.end();
+                }
+              });
+
+        }
+    });
+    socket.on("newUserDash",uData=>{
+        if(socketUsers[getIndex(socket.id)].permissions == "root"){
+            let con = newConnection();
+            let sql = "INSERT INTO userInfo (username,password,permissions) VALUES ('"+uData.username+"','"+uData.password+"','"+uData.permissions+"')";
+            con.query(sql,(err,result)=>{
+                if(err){
+                    console.log(err);
+                    socket.emit("newUserRequest",false);
+                }else{
+                    console.log("USER ADDED");
+                    socket.emit("newUserRequest",true);
+                }
+            });
+        }else{
+            socket.emit("newUserRequest",false);
+        }
+    });
+}
 function Plogin(socket){
     socket.emit("connectClient",{code:dbAccess,template:loginPage.html,scripts:loginPage.scripts});
     socket.on("loginUser",data=>{
         if(validateEmpty(data,2)==true){
-            verifyLogin(data,socket);
+            verifyLogin(data,socket,result=>{
+                if(result){
+                    socket.emit("connectClient",{code:dbAccess+1,template:dashBoardPage.html,scripts:dashBoardPage.scripts});
+                    Pdash(socket);
+                }
+            });
         }else{
             socket.emit("refresh","Please fill in all fields")
         }

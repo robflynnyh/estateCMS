@@ -1,101 +1,13 @@
-body{
-    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-    background-color: 	#f8f8ff;
-    margin:0;
+html, body{
+    margin: 0;
     height: 100%;
-    background-image:url("/images/oriental-tiles.png");
-}
-#setupBox{
-    overflow:auto;
-    position: absolute;
-    width: 40rem;
     
-    /*height: 18rem;*/
-    top: calc(50% - 9rem);    
-    left: calc(50% - 20rem);
-    background-color: white;
-    border-radius: 0.8rem;
-    box-shadow: 1px 2px 10px grey;
-    display: flex;
-    flex-direction: column;
-
 }
-#titleBox{
-    align-self: center;
-    font-weight: 900;
-    font-size: 1.1em;
-    margin-top: 1rem;
-}
-#info{
-    margin-top: 0.5rem;
-    align-self: center;
-}
-#setupForm {
-    margin-top: 0.35rem;
-    margin-bottom: 0.35rem;
-}
-#setupForm > *{
-    margin-top: 0.4rem;
-} 
-#submission{
-    width:80%;
-    margin: 0 auto;
-    text-align: end;
-    margin-top:0.5rem;
-}
-#submission #sButton{
-    width:20%;
-    font-weight: 700;
-    border-radius: 0.2rem;
-}
-.formBox{
-    width:80%;
-    margin:0 auto;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-}
-.formBox .formField{
-    border: 1px solid grey;
-    border-radius: 0.3rem;
-}
-#topBox{
-    position: absolute;
-    top:0;
-    left:0;
-    font-size: large;
-    padding:0.2rem;
-    padding-left: 3rem;
-    padding-right: 3rem;
-    box-shadow: 0px 1px;
-    background-color: white;
+body{
+    background-image:url("oriental-tiles.png");
 }
 
-#loginBox{
-    overflow:auto;
-    position: absolute;
-    width: 40rem;
-    
-    /*height: 18rem;*/
-    top: calc(50% - 9rem);    
-    left: calc(50% - 20rem);
-    background-color: white;
-    border-radius: 0.8rem;
-    box-shadow: 1px 2px 10px grey;
-    display: flex;
-    flex-direction: column;
 
-}
-
-#loginForm {
-    margin-top: 0.35rem;
-    margin-bottom: 0.35rem;
-}
-#loginForm > *{
-    margin-top: 0.4rem;
-} 
-
-/************** Dashboard */
 
 #header{
     margin:auto;
@@ -224,34 +136,34 @@ body{
   
 }
 /** user management page **/
-.main #manage{
+.main #userManage{
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;
     text-align: center;
 }
-.main #manage > *{
+.main #userManage > *{
     padding:1rem;
 }
-.main #manage #rPanel{
+.main #userManage #rPanel{
 
     display: flex;
     flex-direction: column;
     width: 50%;
     min-width: max-content;
 }
-.main #manage #lPanel{ 
+.main #userManage #lPanel{ 
     display: flex;
     flex-direction: column;
     width: 50%;
     min-width: max-content;
 }
 
-#manage #title{
+#userManage #title{
     font-weight: 600;
     font-size: 1.1em;
 }
-#manage .contentBox{
+#userManage .userBox{
     box-shadow:inset 1px 2px 3px grey;
     margin:1rem auto;
 
@@ -267,20 +179,20 @@ body{
 }
 
 
-.contentBox::-webkit-scrollbar { 
+.userBox::-webkit-scrollbar { 
     width: 5px;
     height: 15px;
     background-color: aliceblue;
   }
-.contentBox::-webkit-scrollbar-thumb{
+.userBox::-webkit-scrollbar-thumb{
     background-color: rgba(148, 148, 148, 0.233);
     border-radius: 2rem;
   }
-.contentBox:hover::-webkit-scrollbar-thumb, .contentBox:focus::-webkit-scrollbar-thumb, .contentBox:active::-webkit-scrollbar-thumb{
+.userBox:hover::-webkit-scrollbar-thumb, .userBox:focus::-webkit-scrollbar-thumb, .userBox:active::-webkit-scrollbar-thumb{
     background-color: rgb(90, 90, 90);
 }
 
-#manage .contentBox .user{
+#userManage .userBox .user{
     margin:0.2rem;
     padding: 0.3rem;
     background-color: white;
@@ -288,7 +200,7 @@ body{
     display: flex;
     flex-direction: row;
 }
-.contentBox #userSearch{
+.userBox #userSearch{
     border-radius: 0.6rem 0.6rem 0 0;
     background-color: white;
     margin: 0.2rem;
@@ -296,7 +208,7 @@ body{
     margin-bottom: 0.4rem;
     box-shadow: 1px 1px 1px grey;
 }
-.contentBox #userSearch input{
+.userBox #userSearch input{
     width: 100%;
     min-width: 10rem;
     border-radius: 0.5rem;
@@ -312,13 +224,13 @@ body{
 .user > *{
     padding:0.2rem;
 }
-#manage .field.top{
+#userManage .field.top{
     border-radius: 0.6rem 0.6rem 0 0;
 }
-#manage .field.bottom{
+#userManage .field.bottom{
     border-radius: 0 0 0.6rem 0.6rem;
 }
-#manage .field{
+#userManage .field{
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -329,21 +241,21 @@ body{
     box-shadow: 1px 1px 1px grey;
     height: 1.5rem;
 }
-.contentBox .field input{
+.userBox .field input{
     border-radius: 0.5rem;
     font-size: 1em;
     width: 10rem;
 }
-.contentBox .field span{
+.userBox .field span{
     align-self: center;
 }
-.contentBox .field select{
+.userBox .field select{
     border-radius: 0.5rem;
     height: 1.5rem;
     font-size: 1em;
     width: 10rem;
 }
-.contentBox .field button{
+.userBox .field button{
     margin-left: auto;
     border-radius: 0.3rem;
     font-weight: 600;
@@ -352,12 +264,9 @@ body{
     border-style: none;
     box-shadow: 1px 1px grey;
 }
-.contentBox .field button:hover{
+.userBox .field button:hover{
     box-shadow:inset 1px 1px grey;
 }
-.contentBox .field button:active{
+.userBox .field button:active{
     background-color: rgba(209, 241, 160, 0.685);
 }
-
-
-/*************************/
