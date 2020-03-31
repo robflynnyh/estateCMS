@@ -10,6 +10,33 @@ function pageContent(html){
     $(".main").html(html);
 }
 
+function siteInfoPage(html,dash){
+    var fileReader = new FileReader();
+    var currentFile;
+    $(".main").html(html);
+    $("#siteIMAGE").attr("src","/images/logo.image?"+new Date().getTime()); //update image instead of cached image
+    $(".formBtn").click(event=>{
+        if(currentFile){
+            fileReader.onload = e =>{
+                let siteLogo = e.target.result;
+                dash.newSiteInfo({image:siteLogo},result=>{
+                    if(result){
+                        dash.setView(0);
+                    }else{
+                        alert("Error updating site info");
+                    }
+                });
+                //console.log(e.target.result);
+
+            }
+            fileReader.readAsArrayBuffer(currentFile);
+        }
+    });
+    $(".fileUpload").change(event=>{
+        currentFile = event.target.files[0];
+    });
+}
+
 function uPage(html,dash){
     $(".main").html(html);
     $("#ADDUSER").click(event=>{
@@ -35,3 +62,4 @@ function uPage(html,dash){
         }
     });
 }
+

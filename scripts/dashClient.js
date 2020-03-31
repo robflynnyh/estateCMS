@@ -1,7 +1,7 @@
 var siteDetailsP = `
 <div id="siteDetails">
 <div id="lPanel">
-    <img src="/images/logo.png">
+    <img src="/images/logo.image" id="siteIMAGE">
     <span class="tBox">Site Logo</span>
 </div>
 <div id="rPanel">
@@ -57,34 +57,17 @@ var housePage = `
 <div id="rPanel">
     <div id="title">Add Houses</div>
     <div class="contentBox">
+        <div class="field top"><span>Address:</span> <input type="text" id="addr"></div>
+        <div class="field"><span>Post Code:</span> <input type="text" id="pcode"></div>
+        <div class="field"><span>City:</span> <input type="text" id="city"></div>
+        <div class="field"><span>Property Image:</span><input type="file" id="hImage" class="fileUpload"></div>
+        <div class="field bottom"><button type="button" id="ADDprop">Add Property</button></div>
     </div>
 </div>
 </div>
 `;
 var housePageData = "";
 
-var dataSet = [
-    {
-        name:"Jerry Brown",
-        Uname:"Jerry27",
-        Pmiss:3
-    },
-    {
-        name:"Jerry Brown",
-        Uname:"Jerry27",
-        Pmiss:3
-    },
-    {
-        name:"Jerry Brown",
-        Uname:"Jerry27",
-        Pmiss:3
-    },
-    {
-        name:"Jerry Brown",
-        Uname:"Jerry27",
-        Pmiss:3
-    }
-]
 class dashboard{
     constructor(view){
         this.view = view;
@@ -116,7 +99,7 @@ class dashboard{
         this.view = v;
         switch(this.view){
             case 0:
-                pageContent(siteDetailsP)
+                siteInfoPage(siteDetailsP,this);
                 this.setActive();
                 break;
             case 1:
@@ -161,6 +144,13 @@ class dashboard{
         socket.emit("newUserDash",data);
         socket.off("newUserRequest");
         socket.on("newUserRequest",result=>{
+            callback(result);
+        });
+    }
+    newSiteInfo(data,callback){
+        socket.emit("siteInfoUpdate",data);
+        socket.off("siteInfoResult");
+        socket.on("siteInfoResult",result=>{
             callback(result);
         });
     }

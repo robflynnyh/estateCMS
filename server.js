@@ -226,6 +226,10 @@ function getIndex(socketid){
     return socketUsers.findIndex(el=>el.socketID==socketid);
 }
 
+function writeFromBuffer(imgpath,imgBuff,callback){
+    fs.writeFile(imgpath,Buffer.from(imgBuff),error=>callback(error));
+}
+
 function verifyLogin(loginData,socket,callback){
     var con = newConnection();
     let sql = "SELECT username, permissions FROM userInfo WHERE username = '"+loginData.username+"' and password = '"+loginData.password+"'";
@@ -279,7 +283,36 @@ function Pdash(socket){
             socket.emit("newUserRequest",false);
         }
     });
+    socket.on("siteInfoUpdate",data=>{
+        writeFromBuffer("images/logo.image",data.image,err=>{
+            if(err)console.log(err),socket.emit("siteInfoResult",false);
+            else{
+                console.log("-- Site Log Saved --");
+                socket.emit("siteInfoResult",true);
+            }
+        });
+    });
 }
+
+function createHouseDB(con){
+    let sql = "CREATE TABLE houses(houseID int NOT NULL AUTO_INCREMENT PRIMARY KEY, address varchar(255) NOT NULL UNIQUE, description varchar(1000), image varchar(255))";
+    con.query(sql,(err,result)=>{
+        if(err)throw err;
+        console.log("-- Houses table created --");
+        con.end();
+    });
+}
+
+function checkHouseDB(){
+    let con = newConnection();
+    let sql = "SELECT * FROM houses";
+    con.query(sql,(err,result)=>{
+        if(err){
+            createHouseDB(con);
+        }else con.end();
+    });
+}
+
 function Plogin(socket){
     socket.emit("connectClient",{code:dbAccess,template:loginPage.html,scripts:loginPage.scripts});
     socket.on("loginUser",data=>{
@@ -294,9 +327,12 @@ function Plogin(socket){
             socket.emit("refresh","Please fill in all fields")
         }
     });
+    socket.on("checkDB",()=>{
+        checkHouseDB();
+    });
 }
 
-admin.on("connection",(socket)=>{
+admin.on("connection",socket=>{
     socketUsers.push({socketID:socket.id});
     testConnection(()=>{
         console.log("Admin page connection");

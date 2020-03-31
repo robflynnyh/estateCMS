@@ -1,3 +1,4 @@
+socket.emit("checkDB");
 var LOGIN = {
     submitLogin:()=>{
         var username = $("#uName").val();

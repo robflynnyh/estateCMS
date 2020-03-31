@@ -23,6 +23,9 @@
         
     </div>
 </div>
-<script>
+<script type="text/javascript">
+    window.onbeforeunload=()=>{
+        return "Refreshing the page will log you out, do you want to coninue?";
+    }
     docReady();
 </script>
