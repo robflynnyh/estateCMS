@@ -250,6 +250,35 @@ function verifyLogin(loginData,socket,callback){
     });
   }
 
+function addHouseImage(house,con,callback){
+    let sql = `SELECT houseID FROM houses WHERE address = "${house.address}" `;
+    con.query(sql,(error,result)=>{
+        if(error)con.end(),console.log(error),callback("noImage");
+        else{
+            var houseID = result[0].houseID;
+            writeFromBuffer("images/houses/"+houseID,house.image,err=>{
+                if(err)console.log(err),callback("noImage");
+                else{
+                    callback(true);
+                    con.end();
+                }
+            });
+        }
+    });
+}
+
+function addNewHouse(house,callback){
+    var con = newConnection();
+    let sql = `INSERT INTO houses (address, postCode, city, description)
+                VALUES ("${house.address}","${house.postCode}","${house.city}","${house.description}")`;
+    con.query(sql,(err,result)=>{
+        if(err)con.end(),console.log(err),callback(false);
+        else{
+            addHouseImage(house,con,callback);
+        }
+    });
+}
+
 function Pdash(socket){
     socket.on("getUsers",()=>{
         if(socketUsers[getIndex(socket.id)].permissions == "root"){
@@ -265,6 +294,18 @@ function Pdash(socket){
               });
 
         }
+    });
+    socket.on("getHouses",()=>{
+        console.log(socketUsers[getIndex(socket.id)]); /////////////////
+        let con = newConnection();
+        let sql = "SELECT * FROM houses";
+        con.query(sql,(err,result)=>{
+            if(err)throw err //?
+            else {
+                socket.emit("housesReturned",result);
+                con.end();
+            }
+        });
     });
     socket.on("newUserDash",uData=>{
         if(socketUsers[getIndex(socket.id)].permissions == "root"){
@@ -283,6 +324,13 @@ function Pdash(socket){
             socket.emit("newUserRequest",false);
         }
     });
+
+    socket.on("addHouse",data=>{
+        addNewHouse(data,result=>{
+            socket.emit("addHouseResult",result);
+        });
+    });
+
     socket.on("siteInfoUpdate",data=>{
         writeFromBuffer("images/logo.image",data.image,err=>{
             if(err)console.log(err),socket.emit("siteInfoResult",false);
@@ -295,7 +343,8 @@ function Pdash(socket){
 }
 
 function createHouseDB(con){
-    let sql = "CREATE TABLE houses(houseID int NOT NULL AUTO_INCREMENT PRIMARY KEY, address varchar(255) NOT NULL UNIQUE, description varchar(1000), image varchar(255))";
+    let sql = `CREATE TABLE houses(houseID int AUTO_INCREMENT PRIMARY KEY, address varchar(255) NOT NULL UNIQUE,
+                                 postCode varchar(10) NOT NULL, city varchar(20) NOT NULL, description varchar(1000))`;
     con.query(sql,(err,result)=>{
         if(err)throw err;
         console.log("-- Houses table created --");

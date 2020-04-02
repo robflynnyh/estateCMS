@@ -60,6 +60,9 @@ var housePage = `
         <div class="field top"><span>Address:</span> <input type="text" id="addr"></div>
         <div class="field"><span>Post Code:</span> <input type="text" id="pcode"></div>
         <div class="field"><span>City:</span> <input type="text" id="city"></div>
+        <div class="field" style="height:min-content"><span>Description:</span>
+        <textarea id="houseDesc" rows="3"></textarea>
+        </div>
         <div class="field"><span>Property Image:</span><input type="file" id="hImage" class="fileUpload"></div>
         <div class="field bottom"><button type="button" id="ADDprop">Add Property</button></div>
     </div>
@@ -72,6 +75,7 @@ class dashboard{
     constructor(view){
         this.view = view;
         this.users = [];
+        this.houses = [];
         this.listeners = [];
         this.init();
     }
@@ -109,13 +113,22 @@ class dashboard{
                 break;
             case 2:
                 this.getHouses();
-                pageContent(housePageData);
+                hPage(housePageData,this);
                 this.setActive();
                 break;
         }
     }
-    getHouses(){
+    getHouses(callback){
         if(housePageData==""){housePageData=housePage.replace("//[HOUSES]//","");}
+        socket.emit("getHouses");
+        socket.off("housesReturned");
+        socket.on("housesReturned",houseD=>{
+            this.houses = houseD;
+            this.returnHouses(string=>{
+                housePageData = housePage.replace("//[HOUSES]//",string);
+                if(callback)callback();
+            });
+        });
     }
     getUsers(callback){
         if(userPageData==""){userPageData = userPage.replace("//[USERS]//","");}
@@ -140,6 +153,17 @@ class dashboard{
         });
         callback(string);
     }
+    returnHouses(callback){
+        var string = '<div id="houseSearch"><input type="text"></div>';
+        this.houses.forEach(el=>{
+            string += `<div class="house" data-house="${el.houseID}">
+                       <div class="Haddress"><b>Address:</b> ${el.address}</div>
+                       <div class="HpCode"><b>Post Code:</b> ${el.postCode}</div>
+                       </div>
+            `;
+        });
+        callback(string);
+    }
     newUser(data,callback){
         socket.emit("newUserDash",data);
         socket.off("newUserRequest");
@@ -151,6 +175,14 @@ class dashboard{
         socket.emit("siteInfoUpdate",data);
         socket.off("siteInfoResult");
         socket.on("siteInfoResult",result=>{
+            callback(result);
+        });
+    }
+
+    addNewHouse(data,callback){
+        socket.emit("addHouse",data);
+        socket.off("addHouseResult");
+        socket.on("addHouseResult",result=>{
             callback(result);
         });
     }

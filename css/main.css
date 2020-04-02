@@ -287,6 +287,8 @@ body{
     box-shadow: 1px 1px 1px grey;
     display: flex;
     flex-direction: row;
+    justify-content: space-between;
+    flex-wrap: wrap;
 }
 .contentBox #userSearch{
     border-radius: 0.6rem 0.6rem 0 0;
@@ -302,12 +304,6 @@ body{
     border-radius: 0.5rem;
     height: 1.5rem;
     font-size: 1em;
-}
-.user{
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    flex-wrap: wrap;
 }
 .user > *{
     padding:0.2rem;
@@ -333,6 +329,11 @@ body{
     border-radius: 0.5rem;
     font-size: 1em;
     width: 10rem;
+}
+.contentBox .field textarea{
+    resize: none;
+    border-radius: 0.5rem;
+    box-shadow: inset 1px 1px grey;
 }
 .contentBox .field span{
     align-self: center;
@@ -362,6 +363,35 @@ body{
 #hImage{
     width:6.5rem;
     border-radius: 0;
+}
+
+#manage .contentBox .house{
+    margin:0.2rem;
+    padding: 0.3rem;
+    background-color: white;
+    box-shadow: 1px 1px 1px grey;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+.contentBox #houseSearch{
+    border-radius: 0.6rem 0.6rem 0 0;
+    background-color: white;
+    margin: 0.2rem;
+    padding:0.7rem;
+    margin-bottom: 0.4rem;
+    box-shadow: 1px 1px 1px grey;
+}
+.contentBox #houseSearch input{
+    width: 100%;
+    min-width: 10rem;
+    border-radius: 0.5rem;
+    height: 1.5rem;
+    font-size: 1em;
+}
+#manage .contentBox .house > *{
+    padding:0.2rem;
 }
 
 /*************************/
