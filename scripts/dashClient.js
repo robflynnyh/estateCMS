@@ -1,3 +1,4 @@
+
 var siteDetailsP = `
 <div id="siteDetails">
 <div id="lPanel">
@@ -62,6 +63,14 @@ var housePage = `
         <div class="field"><span>City:</span> <input type="text" id="city"></div>
         <div class="field" style="height:min-content"><span>Description:</span>
         <textarea id="houseDesc" rows="3"></textarea>
+        </div>
+        <div class="field">
+        <span>
+        Beds: <input type="number" id="beds" style="width:4rem; margin-left:1rem" min="1" max="20">
+        </span>
+        <span>
+        Bathrooms: <input type="number" id="bathrooms" style="width:4rem; margin-left:1rem" min="1" max="15">
+        </span>
         </div>
         <div class="field"><span>Property Image:</span><input type="file" id="hImage" class="fileUpload"></div>
         <div class="field bottom"><button type="button" id="ADDprop">Add Property</button></div>
@@ -143,7 +152,7 @@ class dashboard{
         });
     }
     returnUsers(callback){
-        var string = '<div id="userSearch"><input type="text"></div>';
+        var string = '<div id="userSearch"><input type="text" id="uTxtInput" placeholder="Filter by username"></div>';
         this.users.forEach(el=>{
             string += `<div class="user" data-user="${el.username}">
                        <div class="uNameT"><b>Username:</b> ${el.username}</div>
@@ -154,9 +163,9 @@ class dashboard{
         callback(string);
     }
     returnHouses(callback){
-        var string = '<div id="houseSearch"><input type="text"></div>';
+        var string = '<div id="houseSearch"><input type="text" id="hTxtInput" placeholder="Filter by address"></div>';
         this.houses.forEach(el=>{
-            string += `<div class="house" data-house="${el.houseID}">
+            string += `<div class="house" data-house="${el.address}">
                        <div class="Haddress"><b>Address:</b> ${el.address}</div>
                        <div class="HpCode"><b>Post Code:</b> ${el.postCode}</div>
                        </div>
@@ -186,6 +195,53 @@ class dashboard{
             callback(result);
         });
     }
+
     
+}
+
+class popupBox{
+    constructor(displayData,editFields,imageBool){
+        this.info = displayData;
+        this.editable = editFields;
+        this.image = imageBool;
+        this.html = "";
+    }
+    createPopup(){
+        $("#overlay").show();
+        $("#popup").show();
+        this.html += `<div id="topbar"><div id="exit">X</div></div>`;
+        if(this.image != false){
+            this.html += `
+                <img src="${this.image}">
+            `;
+        }
+        this.html+="<div id='formContainer'>";
+        this.info.forEach(el=>{
+            this.html += `
+                <div class="displayField">
+                <span class="fname">${el.Fname}:</span> <span class="fdata">${el.Fdata}</span>
+                </div>
+            `;
+        });
+        this.editable.forEach(el=>{
+            this.html+= `
+                <div class="displayField">
+                <span class="fname" style="align-self: center;">${el.Fname}:</span> <textarea class="popupInputArea" rows="3">${el.Fdata}</textarea>
+                </div> 
+            `;
+        });
+        this.html+= `</div>
+            <div id="removeHouse">Remove</div>
+            <div id="updateBtn">Update</div>
+        `;
+        $("#popup").html(this.html);
+        $("#popup #exit").click(event=>this.destroyPopup());
+    }
+    destroyPopup(){
+        $("#popup #exit").off("click");
+        $("#popup").html("");
+        $("#popup").hide();
+        $("#overlay").hide();   
+    }
 }
 

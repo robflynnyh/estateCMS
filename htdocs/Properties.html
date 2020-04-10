@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="main.css">
+<script src="/socket.io/socket.io.js"></script> 
+<script src="/scripts/jquery-3.4.1.min.js"></script> 
+<script src="/scripts/compromise.min.js"></script> 
+<link rel="stylesheet" href="/scripts/leaflet/leaflet.css" />
+<script src="/scripts/leaflet/leaflet.js"></script>
+<script src="client.js"></script> 
+<script src="properties.js"></script> 
+</head>
+<body>
+<div id="pageContents">
+    <div id="siteHeader">
+        <div id="hContainer">
+            <div id="siteImg">
+                <img src="images/logo.png">
+            </div>
+            <div id="title">
+				Withington Estate Agents
+            </div>
+            <div id="siteMenu">
+                <ul><li><a href="/">Home</a></li><li><a href=Properties.html>Properties</a></li></ul>
+            </div>
+        </div>
+    </div>
+    <div id="main">
+        <div id="search">
+                <input type="text" id="addrSrch" class="filters" placeholder="Address">
+                <input type="text" id="pcSrch" class="filters" placeholder="Post Code">
+                <input type="text" id="citySrch" class="filters" placeholder="City">
+                <input type="number" id="bedNum" min="1" max="20" placeholder="Beds">
+                <input type="number" id="bathNum" min="1" max="10" placeholder="Bathrooms">
+                <div id="searchBtn">Search</div>
+        </div>
+        <div id="properties">
+            
+        </div>
+    </div>
+</body>
+</html>

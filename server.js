@@ -113,7 +113,7 @@ fs.readFile(__dirname+"/serverFiles/dashboard.html","utf8",(er,data)=>{
         dashBoardPage.html = data;
         console.log("Dashboard page -- Loaded ✓");
     }
-});
+});     
 ///
 app.get("/admin",(req,res,nxt)=>{
     res.sendFile(__dirname+"/admin/main.html");
@@ -122,11 +122,13 @@ app.get("/admin",(req,res,nxt)=>{
 app.use('/css',express.static(__dirname +'/css'));
 app.use('/images',express.static(__dirname +'/images'));
 app.use('/scripts',express.static(__dirname +'/scripts'));
+app.use('/',express.static(__dirname +'/htdocs'));
 var server = app.listen(8080, function(){
   console.log('listening on :8080');
 });
 var io = require("socket.io")(server);
 const admin = io.of("/admin");
+const user = io.of("/user");
 
 function buildDBcredFile(){
     fs.writeFile("dbCredentials.json",JSON.stringify(DBdata),"utf8",err=>{
@@ -269,8 +271,8 @@ function addHouseImage(house,con,callback){
 
 function addNewHouse(house,callback){
     var con = newConnection();
-    let sql = `INSERT INTO houses (address, postCode, city, description)
-                VALUES ("${house.address}","${house.postCode}","${house.city}","${house.description}")`;
+    let sql = `INSERT INTO houses (address, postCode, city, description, beds, bathrooms, lat, lon)
+                VALUES ("${house.address}","${house.postCode}","${house.city}","${house.description}","${house.bedrooms}","${house.bathrooms}","${house.lat}","${house.long}")`;
     con.query(sql,(err,result)=>{
         if(err)con.end(),console.log(err),callback(false);
         else{
@@ -344,7 +346,7 @@ function Pdash(socket){
 
 function createHouseDB(con){
     let sql = `CREATE TABLE houses(houseID int AUTO_INCREMENT PRIMARY KEY, address varchar(255) NOT NULL UNIQUE,
-                                 postCode varchar(10) NOT NULL, city varchar(20) NOT NULL, description varchar(1000))`;
+                                 postCode varchar(10) NOT NULL, city varchar(20) NOT NULL, description varchar(1000), beds int NOT NULL, bathrooms int NOT NULL, lat varchar(255), lon varchar(255))`;
     con.query(sql,(err,result)=>{
         if(err)throw err;
         console.log("-- Houses table created --");
@@ -399,5 +401,24 @@ admin.on("connection",socket=>{
     });
     socket.on('disconnect',()=>{
         socketUsers = socketUsers.filter(el=>el.socketID!=socket.id);
+    });
+});
+
+function getProps(callback){
+    var con = new newConnection();
+    let sql = `SELECT * FROM houses`;
+    con.query(sql,(err,results)=>{
+        con.end();
+        if(err)console.error(err),callback(false);
+        else callback(results);
+    });
+}
+
+//user section
+user.on("connection",socket=>{
+    socket.on("sendProps",()=>{
+        getProps(results=>{
+            socket.emit("props",results);
+        });
     });
 });
