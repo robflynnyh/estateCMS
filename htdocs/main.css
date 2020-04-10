@@ -221,3 +221,19 @@ a:active {
     cursor: pointer;
     background-color: rgb(121, 218, 150);
 }
+#mapToggle{
+    user-select: none;
+    border-radius: 0.2rem;
+    width: max-content;
+    padding: 0.5rem;
+    background-color: lightsteelblue;
+    box-shadow: inset 1px 1px 2px grey;
+    font-weight: 600;
+    color: white;
+    text-shadow: 1px 1px black;
+}
+#propMap{
+    display: none;
+    height: 500px;
+    margin:1rem;
+}

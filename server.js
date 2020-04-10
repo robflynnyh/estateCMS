@@ -271,7 +271,7 @@ function addHouseImage(house,con,callback){
 
 function addNewHouse(house,callback){
     var con = newConnection();
-    let sql = `INSERT INTO houses (address, postCode, city, description, beds, bathrooms, lat, lon)
+    let sql = `INSERT INTO houses (address, postCode, city, description, beds, bathrooms, lat, lon  )
                 VALUES ("${house.address}","${house.postCode}","${house.city}","${house.description}","${house.bedrooms}","${house.bathrooms}","${house.lat}","${house.long}")`;
     con.query(sql,(err,result)=>{
         if(err)con.end(),console.log(err),callback(false);

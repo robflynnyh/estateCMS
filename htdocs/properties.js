@@ -1,10 +1,8 @@
 var cli = new client();
 var properties = [];
-
-
-
-function buildHtml(filters, toReturn){
-    var str = "<div id='houses'>";
+var map;
+var mapItems = [];
+function filterProps(filters,callback){
     var props = properties;
     props = props.filter(el=>{
         if(nlp(el["address"]).has(filters["address"]) || filters["address"].length==0){
@@ -19,26 +17,57 @@ function buildHtml(filters, toReturn){
             }
         }
     });
-    props.forEach(el=>{
-        str += `
-            <div id="house${el.houseID}" data-id="${el.houseID}">
-            <div class="imgCont">
-                <img src="images/houses/${el.houseID}">
-                <div class="bbInfo">
-                <span class="beds">Beds: ${el.beds}</span> <span class="baths">Bathrooms: ${el.bathrooms}</span>
+    callback(props);
+}
+
+function buildHtml(filters, toReturn){ 
+    filterProps(filters,props=>{
+        var str = "<div id='houses'>";
+        props.forEach(el=>{
+            str += `
+                <div id="house${el.houseID}" data-id="${el.houseID}">
+                <div class="imgCont">
+                    <img src="images/houses/${el.houseID}">
+                    <div class="bbInfo">
+                    <span class="beds">Beds: ${el.beds}</span> <span class="baths">Bathrooms: ${el.bathrooms}</span>
+                    </div>
                 </div>
-            </div>
-            <div class="content">
-                <div class="title">${el.address}</div>
-                <div class="desc">
-                    ${el.description}
+                <div class="content">
+                    <div class="title">${el.address}</div>
+                    <div class="desc">
+                        ${el.description}
+                    </div>
                 </div>
-            </div>
-            </div>
-        `;
+                </div>
+            `;
+        });
+        str+="</div>";
+        toReturn(str);
     });
-    str+="</div>";
-    toReturn(str);
+}
+
+function setupMap(props,callback){
+    mapItems.forEach(el=>{
+        el.remove();
+    });
+    let lat = props.reduce((a,b)=>a+parseFloat(b.lat),0) / props.length;
+    let lon = props.reduce((a,b)=>a+parseFloat(b.lon),0) / props.length; //get average geocordinates
+    callback({lat:lat,lon:lon});
+}
+
+function buildPropMap(filters){
+    filterProps(filters,props=>{
+        setupMap(props,d=>{
+            map.setView([d.lat,d.lon]);
+            console.log(d);
+            mapItems = [];
+            props.forEach(el=>{
+                let marker = L.marker([el.lat,el.lon])
+                mapItems.push(marker);
+                marker.addTo(map);
+            });
+        });
+    });
 }
 
 cli.getProperties(result=>{
@@ -48,7 +77,20 @@ cli.getProperties(result=>{
     }
 });
 
+function initMap(){
+    map = L.map("propMap").setView([0, 0], 13);
+    L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+        maxZoom: 18,
+        id: 'mapbox/streets-v11',
+        tileSize: 512,
+        zoomOffset: -1,
+        accessToken: 'pk.eyJ1IjoicmZseW5uOTgiLCJhIjoiY2s4dWJsanE3MDR6NDNzcDg3dXVlN3h5eiJ9.EKc6CNR9DIEFipydF_hnfA'
+    }).addTo(map);
+}
+
 $(document).ready(()=>{
+    initMap();
     $("#searchBtn").click(event=>{
         let filter = {
             address: $("#addrSrch").val(),
@@ -59,11 +101,19 @@ $(document).ready(()=>{
         }
     
         if(Object.values(filter).some(el=>el.length !=0) == true){
-            buildHtml(filter,html=>{
-                $("#properties").html(html);
-            });
+            if(!$("#mapCheck").is(":checked")){
+                buildHtml(filter,html=>{
+                    $("#propMap").hide();
+                    $("#properties").html(html);
+                });
+            }else{
+                $("#properties").html("");
+                $("#propMap").show();
+                buildPropMap(filter);
+            }
         }else{
             $("#properties").html("");
+            $("#propMap").hide();
             alert("No filters entered");
         }
 
