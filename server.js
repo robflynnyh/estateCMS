@@ -3,8 +3,16 @@ var app = express();
 const mysql = require("mysql");
 const fs = require("fs");
 
+var housePage = require("./module/housePage");
+var propSearch = require("./module/propertyReturn");
+var hImagesManager = require("./module/hImageManager");
+
 var dbAccess = 0;
 var socketUsers = [];
+var site = {
+    name: "",
+    description: ""
+}
 
 var dbDetailsPage = {
     html:"",
@@ -113,10 +121,51 @@ fs.readFile(__dirname+"/serverFiles/dashboard.html","utf8",(er,data)=>{
         dashBoardPage.html = data;
         console.log("Dashboard page -- Loaded ✓");
     }
-});     
+});  
+
+function saveSiteInfo(callback){
+    fs.writeFile("siteInfo.json",JSON.stringify(site),"utf8",err=>{
+        if(err&&callback)callback(false);
+        else if (err) throw(err);
+        else{
+            console.log("Site Info - file created");
+            if(callback)callback(true);
+        }
+    });
+}
+//res.status(404).send('Not found');
+fs.readFile("siteInfo.json","utf8",(er,data)=>{
+    if(er)saveSiteInfo();
+    else{
+        site = JSON.parse(data);
+        console.log("Site Info -- Loaded ✓");
+    }
+});
 ///
 app.get("/admin",(req,res,nxt)=>{
     res.sendFile(__dirname+"/admin/main.html");
+});
+app.get("/property",(req,res)=>{
+    fs.readFile(__dirname+"/serverFiles/propertyPage.html","utf8",(er,data)=>{
+        if(er)res.status(404).send('Error Loading Page...'),console.error(er);
+        else{
+            var prop = new propSearch(newConnection(),req.query.id);
+            prop.getData(outcome=>{
+                console.log(outcome);
+                if(outcome.result){
+                    new housePage(data,outcome.data[0],html=>{
+                        res.send(html);
+                        res.end();
+                    });
+                }else{
+                    res.status(404).send('Error Loading Property...')
+                }
+                prop.endConnection();
+            });
+            
+        }
+    });
+
 });
 ///
 app.use('/css',express.static(__dirname +'/css'));
@@ -258,12 +307,19 @@ function addHouseImage(house,con,callback){
         if(error)con.end(),console.log(error),callback("noImage");
         else{
             var houseID = result[0].houseID;
-            writeFromBuffer("images/houses/"+houseID,house.image,err=>{
-                if(err)console.log(err),callback("noImage");
+            var hIMGManager = new hImagesManager(houseID,writeFromBuffer);
+            hIMGManager.init();
+            hIMGManager.newProperty(result=>{
+                if(!result.outcome)console.log(result.reason),callback("noImage"); //look at dash.js possibly change paremeters
                 else{
-                    callback(true);
-                    con.end();
+                    hIMGManager.addImage(house.image,result2=>{
+                        if(!result.outcome)console.log(result.reason),callback("noImage");
+                        else{
+                            callback(true);
+                        }
+                    })
                 }
+                con.end();
             });
         }
     });
@@ -334,16 +390,30 @@ function Pdash(socket){
     });
 
     socket.on("siteInfoUpdate",data=>{
-        writeFromBuffer("images/logo.image",data.image,err=>{
-            if(err)console.log(err),socket.emit("siteInfoResult",false);
-            else{
-                console.log("-- Site Log Saved --");
-                socket.emit("siteInfoResult",true);
+        if(socketUsers[getIndex(socket.id)].permissions == "root"){
+            site.name = data.name;
+            site.description = data.description;
+            if(data.image){
+                writeFromBuffer("images/logo.image",data.image,err=>{
+                    if(err)console.log(err),socket.emit("siteInfoResult",false);
+                    else{
+                        saveSiteInfo(success=>{
+                            if(success){
+                                console.log("-- Site info Saved --");
+                                socket.emit("siteInfoResult",true);
+                            }
+                        });
+                    }
+                });
             }
-        });
+            else{
+                saveSiteInfo(outcome=>{
+                    socket.emit("siteInfoResult",outcome);
+                });
+            }
+        }else socket.emit("siteInfoResult",false);
     });
 }
-
 function createHouseDB(con){
     let sql = `CREATE TABLE houses(houseID int AUTO_INCREMENT PRIMARY KEY, address varchar(255) NOT NULL UNIQUE,
                                  postCode varchar(10) NOT NULL, city varchar(20) NOT NULL, description varchar(1000), beds int NOT NULL, bathrooms int NOT NULL, lat varchar(255), lon varchar(255))`;
@@ -370,7 +440,7 @@ function Plogin(socket){
         if(validateEmpty(data,2)==true){
             verifyLogin(data,socket,result=>{
                 if(result){
-                    socket.emit("connectClient",{code:dbAccess+1,template:dashBoardPage.html,scripts:dashBoardPage.scripts});
+                    socket.emit("connectClient",{code:dbAccess+1,template:dashBoardPage.html,scripts:dashBoardPage.scripts,siteInfo:site});
                     Pdash(socket);
                 }
             });
@@ -416,6 +486,7 @@ function getProps(callback){
 
 //user section
 user.on("connection",socket=>{
+    socket.emit("siteDetails",site);
     socket.on("sendProps",()=>{
         getProps(results=>{
             socket.emit("props",results);

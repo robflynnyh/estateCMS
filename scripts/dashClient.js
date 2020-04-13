@@ -8,11 +8,11 @@ var siteDetailsP = `
 <div id="rPanel">
     <div class="formElement">
         <span class="formText">Site Name:</span>
-        <span class="formInput"><input type="text" id="siteName"></span>
+        <span class="formInput"><input type="text" id="siteName" value="//[SITENAME]//"></span>
     </div>
     <div class="formElement">
         <span class="formText">Site Description:</span>
-        <span class="formInput"><input type="text" id="siteDesc"></span>
+        <span class="formInput"><input type="text" id="siteDesc" value="//[SITEDESC]//"></span>
     </div>
     <div class="formElement">
         <span class="formText">Site Logo:</span>
@@ -22,6 +22,7 @@ var siteDetailsP = `
 </div>
 </div>
 `;
+var siteDetailsPdata;
 var userPage = `
 <div id="manage">
 <div id="lPanel">
@@ -112,7 +113,8 @@ class dashboard{
         this.view = v;
         switch(this.view){
             case 0:
-                siteInfoPage(siteDetailsP,this);
+                this.getInfo();
+                siteInfoPage(siteDetailsPdata,this);
                 this.setActive();
                 break;
             case 1:
@@ -138,6 +140,11 @@ class dashboard{
                 if(callback)callback();
             });
         });
+    }
+
+    getInfo(){
+        siteDetailsPdata = siteDetailsP.replace("//[SITENAME]//",siteInfo.name);
+        siteDetailsPdata = siteDetailsPdata.replace("//[SITEDESC]//",siteInfo.description);
     }
     getUsers(callback){
         if(userPageData==""){userPageData = userPage.replace("//[USERS]//","");}

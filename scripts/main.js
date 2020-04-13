@@ -1,6 +1,7 @@
 var socket = io("/admin");
 var dbAccess;
 var template;
+var siteInfo;
 
 function loadScripts(script){
     return new Promise(resolve=>{
@@ -22,6 +23,7 @@ function scriptsLoaded(scripts,callback){
 function pageSetup(data){
     template = data.template;
     var scripts = data.scripts;
+    if(data.siteInfo)siteInfo=data.siteInfo,console.log(siteInfo);
     scriptsLoaded(scripts,()=>{
         $("#content").html(template);
     });

@@ -25,7 +25,7 @@ function buildHtml(filters, toReturn){
         var str = "<div id='houses'>";
         props.forEach(el=>{
             str += `
-                <div id="house${el.houseID}" data-id="${el.houseID}">
+                <div id="house${el.houseID}" class="house" data-id="${el.houseID}">
                 <div class="imgCont">
                     <img src="images/houses/${el.houseID}">
                     <div class="bbInfo">
@@ -58,11 +58,15 @@ function setupMap(props,callback){
 function buildPropMap(filters){
     filterProps(filters,props=>{
         setupMap(props,d=>{
-            map.setView([d.lat,d.lon]);
+            map.setView([d.lat,d.lon],9);
             console.log(d);
             mapItems = [];
             props.forEach(el=>{
-                let marker = L.marker([el.lat,el.lon])
+                let marker = L.marker([el.lat,el.lon]);
+                marker.bindPopup("<b>"+el.address+"</b>");
+                marker.on("click",e=>{
+                    map.setView([el.lat,el.lon],14);
+                });
                 mapItems.push(marker);
                 marker.addTo(map);
             });
@@ -78,7 +82,7 @@ cli.getProperties(result=>{
 });
 
 function initMap(){
-    map = L.map("propMap").setView([0, 0], 13);
+    map = L.map("propMap").setView([0, 0], 1);
     L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
         maxZoom: 18,
@@ -87,6 +91,12 @@ function initMap(){
         zoomOffset: -1,
         accessToken: 'pk.eyJ1IjoicmZseW5uOTgiLCJhIjoiY2s4dWJsanE3MDR6NDNzcDg3dXVlN3h5eiJ9.EKc6CNR9DIEFipydF_hnfA'
     }).addTo(map);
+}
+
+function eventListerners(className,dataField){
+    $(className).click(e=>{
+        window.location.href = "/property?id="+e.currentTarget.dataset[dataField];
+    });
 }
 
 $(document).ready(()=>{
@@ -105,6 +115,7 @@ $(document).ready(()=>{
                 buildHtml(filter,html=>{
                     $("#propMap").hide();
                     $("#properties").html(html);
+                    eventListerners(".house","id");
                 });
             }else{
                 $("#properties").html("");

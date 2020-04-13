@@ -17,6 +17,8 @@ function getGeocode(pcode,addr,thecity,callback){
     let string = `${baseUrl}${key}&street=${street}&city=${city}&postalcode=${postCode}&countrycodes=gb${format}`;
     $.get(string,(data,success)=>{
         callback({data:data,outcome:success});
+    }).fail(e=>{
+        callback({outcome:e.status});
     });
 }
 
@@ -84,7 +86,7 @@ function hPage(html,dash){
             var housePopup = new popupBox(
                 [{Fname:"House ID",Fdata:house.houseID},{Fname:"House Address",Fdata:house.address},{Fname:"Post Code",Fdata:house.postCode},{Fname:"City",Fdata:house.city}],
                 [{Fname:"Description",Fdata:house.description}],
-                "images/houses/"+house.houseID
+                "images/houses/house"+house.houseID+"/image-0"
             );
             housePopup.createPopup();
         });
@@ -111,20 +113,36 @@ function siteInfoPage(html,dash){
     var fileReader = new FileReader();
     var currentFile;
     $(".formBtn").click(event=>{
+        var sName = $("#siteName").val();
+        var sDesc = $("#siteDesc").val();
         if(currentFile){
             fileReader.onload = e =>{
                 let siteLogo = e.target.result;
-                dash.newSiteInfo({image:siteLogo},result=>{
+                dash.newSiteInfo({image:siteLogo,name:sName,description:sDesc},result=>{
                     if(result){
+                        siteInfo.name = sName;
+                        siteInfo.description = sDesc;
                         dash.setView(0);
                     }else{
                         alert("Error updating site info");
+                        dash.setView(0);
                     }
                 });
                 //console.log(e.target.result);
 
             }
             fileReader.readAsArrayBuffer(currentFile);
+        }else{
+            dash.newSiteInfo({image:false,name:sName,description:sDesc},result=>{
+                if(result){
+                    siteInfo.name = sName;
+                    siteInfo.description = sDesc;
+                    dash.setView(0);
+                }else{
+                    alert("Error updating site info");
+                    dash.setView(0);
+                }
+            });
         }
     });
     $(".fileUpload").change(event=>{

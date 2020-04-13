@@ -133,12 +133,19 @@ a:active {
     max-width: 1000px;
     min-width: 600px;
 }
-#houses > *{
+.house{
+    user-select: none;
     background-color: whitesmoke;
     margin:1rem;
     display: flex;
     flex-direction: row;
+    border:1px solid transparent;
 }
+.house:hover{
+    border:1px solid lightgray;
+    cursor: pointer;
+}
+
 #houses div .content{
     display: flex;
     flex-direction: column;

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="main.css">
+<script src="/socket.io/socket.io.js"></script> 
+<script src="/scripts/jquery-3.4.1.min.js"></script> 
+<script src="client.js"></script> 
+<style>
+    #houseSlider{
+    background-color: snow;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content:space-between;
+    width:80%;
+    min-width: max-content;
+    margin:0 auto;
+}
+#houseSlider img{
+    max-height: 20rem;
+}
+#lSlide{   
+    background-color:silver;
+    display: flex;
+    align-items: center;
+}
+#lSlide img{
+    height: auto;
+    width: 2rem;
+}
+#rSlide{
+    display: flex;
+    align-items: center;
+    background-color:silver;
+}
+#rSlide img{
+    height: auto;
+    width: 2rem;
+}
+#rSlide:hover, #lSlide:hover{
+    cursor: pointer;
+}
+</style>
+</head>
+<body>
+<div id="pageContents">
+    <div id="siteHeader">
+        <div id="hContainer">
+            <div id="siteImg">
+                <img src="images/logo.png">
+            </div>
+            <div id="title">
+				Withington Estate Agents
+            </div>
+            <div id="siteMenu">
+                <ul><li><a href="/">Home</a></li><li><a href=Properties.html>Properties</a></li></ul>
+            </div>
+        </div>
+    </div>
+    <div id="main">
+        <div id="houseSlider">
+            <div id="lSlide"><img src="images/lArrow.png"></div>
+            <img src="" id="slideIMG">
+            <div id="rSlide"><img src="images/rArrow.png"></div>
+        </div>
+
+    </div>
+</body>
+<script>
+    var dir = //[IMGDIR]//;
+    var images = //[IMAGELIST]//;
+    images = images.images;
+    var imgI = 0;
+    $("#slideIMG").attr("src",dir+images[imgI]);
+    document.getElementById("rSlide").addEventListener("click",()=>{
+        if(imgI<images.length-1){
+            imgI++;
+        }
+        $("#slideIMG").attr("src",dir+images[imgI])
+    });
+    document.getElementById("lSlide").addEventListener("click",()=>{
+        if(imgI!=0){
+            imgI--;
+        }
+        $("#slideIMG").attr("src",dir+images[imgI])
+    });
+</script>
+</html>
