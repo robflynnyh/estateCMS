@@ -22,6 +22,18 @@ function getGeocode(pcode,addr,thecity,callback){
     });
 }
 
+function getHouseImageList(id,dash,callback){
+    $.get("images/houses/house"+id+"/images.json",(data,success)=>{
+        callback({data:data,outcome:success});
+    }).fail(e=>{
+        dash.newHouseImg(id,result=>{
+            if(result.outcome){
+                getHouseImageList(id,dash,callback);
+            }else console.error("Error creating folder");
+        });
+    });
+}
+
 function hPage(html,dash){
     $(".main").html(html);
     var fileReader = new FileReader();
@@ -33,6 +45,8 @@ function hPage(html,dash){
         let hDesc = $("#houseDesc").val();
         let beds = $("#beds").val();
         let baths = $("#bathrooms").val();
+        let price = $("#price").val();
+        let status = $("#propStatus").val();
         var newHouse = {
             address: addr,
             postCode: pcode,
@@ -40,7 +54,9 @@ function hPage(html,dash){
             description:hDesc,
             bedrooms:beds,
             bathrooms:baths,
-            image: currentFile
+            image: currentFile,
+            price: price,
+            status: status
         }
         if(Object.values(newHouse).some(el=>el.length==0)==false){
             getGeocode(pcode,addr,city,result=>{
@@ -83,13 +99,53 @@ function hPage(html,dash){
         $(el).click(event=>{
             var address = $(el).data("house");
             var house  =  dash.houses.filter(el=>el.address==address)[0];
-            var housePopup = new popupBox(
-                [{Fname:"House ID",Fdata:house.houseID},{Fname:"House Address",Fdata:house.address},{Fname:"Post Code",Fdata:house.postCode},{Fname:"City",Fdata:house.city}],
-                [{Fname:"Description",Fdata:house.description}],
-                "images/houses/house"+house.houseID+"/image-0"
-            );
-            housePopup.createPopup();
+            console.log(house);
+            getHouseImageList(house.houseID,dash,result=>{
+                var popupOptions = {
+                    info: [ //info fields
+                        {Fname:"House ID",Fdata:house.houseID},
+                        {Fname:"House Address",Fdata:house.address},
+                        {Fname:"Post Code",Fdata:house.postCode},
+                        {Fname:"City",Fdata:house.city}
+                    ],
+                    editable: [ //editable textbox fields
+                        {Fname:"Description",Fdata:house.description,rows:3},
+                    ],
+                    numFields: [   //number Input Fields
+                        {Fname:"Bathrooms",Fdata:house.bathrooms},
+                        {Fname:"Beds",Fdata:house.beds},
+                        {Fname:"Latitude",Fdata:house.lat},
+                        {Fname:"Longitude",Fdata:house.lon},
+                        {Fname:"Price",Fdata:house.price,placeholder:"£"}
+                    ],
+                    dropDown: [   //dropDown fields [[Option Value],[Option Display name]]
+                        {Fname:"Status",Fdata:house.status,options:[[["rent"],["Rent"]],[["buy"],["Buy"]],[["sold"],["Sold"]]]}
+                    ],
+                    imgPath: "images/houses/house"+house.houseID+"/",
+                    imgList: result,
+                    ID: house.houseID,
+                    socketDelete: "deleteHouse",
+                    socketUpdate: "updateHouse",
+                    dash: dash
+                };
+                var housePopup = new popupBox(popupOptions);
+                housePopup.createPopup();
+            });
         });
+    });
+
+
+
+    $("#propStatus").change(e=>{
+        let pStat = $("#propStatus").val();
+        switch(pStat){
+            case "rent":
+                $("#propPriceText").text("Price: (£PCM)");
+                break;
+            case "buy":
+                $("#propPriceText").text("Price: (£)");
+                break;
+        }
     });
 
     $("#hTxtInput").off("input");

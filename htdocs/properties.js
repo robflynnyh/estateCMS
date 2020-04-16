@@ -27,7 +27,7 @@ function buildHtml(filters, toReturn){
             str += `
                 <div id="house${el.houseID}" class="house" data-id="${el.houseID}">
                 <div class="imgCont">
-                    <img src="images/houses/${el.houseID}">
+                    <img src="images/houses/house${el.houseID}/${el.image}">
                     <div class="bbInfo">
                     <span class="beds">Beds: ${el.beds}</span> <span class="baths">Bathrooms: ${el.bathrooms}</span>
                     </div>

@@ -74,6 +74,14 @@ var housePage = `
         </span>
         </div>
         <div class="field"><span>Property Image:</span><input type="file" id="hImage" class="fileUpload"></div>
+        <div class="field"><span id="propPriceText">Price: (£PCM)</span> <input type="number" id="price" min="0"></div>
+        <div class="field">
+        <span>Sale type:</span> 
+        <select id="propStatus">
+            <option value="rent">Rent</option>
+            <option value="buy">Buy</option>
+        </select>
+        </div>
         <div class="field bottom"><button type="button" id="ADDprop">Add Property</button></div>
     </div>
 </div>
@@ -203,52 +211,195 @@ class dashboard{
         });
     }
 
+    updateAll(callback){
+        this.getUsers(()=>{
+            this.getHouses(()=>{
+                callback();
+            });
+        });
+    }
+    newHouseImg(id,callback){
+        socket.emit("newHouseImg",id);
+        socket.off("newHouseImgResult");
+        socket.on("newHouseImgResult",result=>{
+            console.log(result);
+            callback(result);
+        });
+    }
     
 }
 
+function returnObject(callback){ //builds object using fieldnames and values
+    var obj = {};
+    $(".popupInputArea").each(i=>{
+        let fname = $(".popupInputArea")[i].getAttribute("name");
+        let fval = $(".popupInputArea")[i].value;
+        obj[fname] = fval;
+    }).promise().done(()=>{
+        callback(obj);
+    });
+}
+//constructor(displayData,editFields,numFields,dropdown,imagesPath,imageList,identifier,socketDelete,socketUpdate,dash,currentImage){
 class popupBox{
-    constructor(displayData,editFields,imageBool){
-        this.info = displayData;
-        this.editable = editFields;
-        this.image = imageBool;
-        this.html = "";
+    constructor(options){
+
+        this.currentImage = 0;
+        Object.keys(options).forEach(el=>{
+            this[el] = options[el];
+        });
+        this.html = "";  
     }
     createPopup(){
         $("#overlay").show();
         $("#popup").show();
         this.html += `<div id="topbar"><div id="exit">X</div></div>`;
-        if(this.image != false){
-            this.html += `
-                <img src="${this.image}">
-            `;
+        if(this.imgPath != false){
+            if(this.imgList.outcome){
+                this.html += `
+                    <img src="${this.imgPath}${this.imgList.data.images[this.currentImage]}" id="popupIMG" title="Left click to cycle images">
+                    <div id="imgNum" style="text-align:center;font-weight:600;user-select:none">${this.currentImage+1}/${this.imgList.data.images.length}</div>
+                    <div id="imgTools">
+                    <div id="removeImg">Remove Image</div>
+                    <input type="file" id="uploadBtn" style="display:none">
+                    <label id="addImg" for="uploadBtn">Add Image</label>
+                    </div>
+                    `;
+            }
         }
         this.html+="<div id='formContainer'>";
-        this.info.forEach(el=>{
-            this.html += `
+        if(this.info){
+            this.info.forEach(el=>{
+                this.html += `
+                    <div class="displayField">
+                    <span class="fname">${el.Fname}:</span> <span class="fdata">${el.Fdata}</span>
+                    </div>
+                `;
+            });
+        }
+        if(this.editable){
+            this.editable.forEach(el=>{
+                this.html+= `
+                    <div class="displayField">
+                    <span class="fname" style="align-self: center;">${el.Fname}:</span> <textarea class="popupInputArea" name="${el.Fname}" rows="${el.rows}">${el.Fdata}</textarea>
+                    </div> 
+                `;
+            });
+        }
+        if(this.numFields){
+            this.numFields.forEach(el=>{
+                let placeholder = "";
+                if(el.placeholder)placeholder=el.placeholder;
+                this.html+= `
                 <div class="displayField">
-                <span class="fname">${el.Fname}:</span> <span class="fdata">${el.Fdata}</span>
+                <span class="fname" style="align-self: center;">${el.Fname}:</span> <input class="popupInputArea" type="number" name="${el.Fname}" value="${el.Fdata}" placeholder="${placeholder}">
                 </div>
-            `;
-        });
-        this.editable.forEach(el=>{
-            this.html+= `
+                `;
+            });
+        }
+        if(this.dropDown){
+            this.dropDown.forEach(el=>{
+                this.html+=`
                 <div class="displayField">
-                <span class="fname" style="align-self: center;">${el.Fname}:</span> <textarea class="popupInputArea" rows="3">${el.Fdata}</textarea>
-                </div> 
-            `;
-        });
+                    <span class="fname" style="align-self: center;">${el.Fname}:</span> 
+                    <select class="popupDropDown popupInputArea" name="${el.Fname}">`;
+                    el.options.forEach(el2=>{
+                        let selected = "";
+                        if(el2[0]==el.Fdata)selected="selected";
+                        this.html+= `
+                            <option value="${el2[0]}" ${selected}>${el2[1]}</option>
+                        `;
+                    });
+                this.html+=`
+                    </select>
+                </div>
+                `;
+            });
+        }
         this.html+= `</div>
-            <div id="removeHouse">Remove</div>
+            <div id="removeBtn">Remove</div>
             <div id="updateBtn">Update</div>
         `;
         $("#popup").html(this.html);
         $("#popup #exit").click(event=>this.destroyPopup());
+        $("#popup #removeBtn").click(event=>this.deleteItem());
+        $("#popup #updateBtn").click(event=>this.updateItem());
+        if(this.imgPath){
+            if(this.imgList.outcome){
+                $("#popupIMG").click(e=>{
+                    if(this.currentImage+1 >= this.imgList.data.images.length){
+                        this.currentImage = 0;
+                    }else{
+                        this.currentImage++;
+                    }
+                    $("#popupIMG").attr("src",this.imgPath+this.imgList.data.images[this.currentImage]);
+                    $("#imgNum").text(this.currentImage+1+"/"+this.imgList.data.images.length);
+                });
+                $("#popup #removeImg").click(e=>{
+                    socket.emit("removeImg", {arrayNum:this.currentImage,id:this.ID});
+                    socket.off("removeImgResult");
+                    socket.on("removeImgResult",result=>{
+                        if(result.outcome){
+                            this.imgList.data.images = result.imgArray;
+                            if(this.currentImage!=0){
+                                this.currentImage -= 1;
+                            }
+                            new popupBox(this).createPopup();
+                        }else{
+                            $("#popup").html("<div style='text-align:center'>Request Unsuccesful</div>");
+                            setTimeout(()=>this.destroyPopup(),2000);
+                        }
+                    });
+                });
+                $("#popup #uploadBtn").change(e=>{
+                    let currentFile = e.target.files[0];
+                    let fileReader = new FileReader();
+                    fileReader.onload = event => {
+                        currentFile = event.target.result;  
+                        socket.emit("addImg",{file:currentFile,hID:this.ID});
+                        socket.off("addImgResult");
+                        socket.on("addImgResult",result=>{
+                            if(result.outcome){
+                                this.imgList.data.images = result.imgArray;
+                                new popupBox(this).createPopup();
+                            }else{
+                                $("#popup").html("<div style='text-align:center'>Request Unsuccesful</div>");
+                                setTimeout(()=>this.destroyPopup(),2000);
+                            }
+                        });
+                    }
+                    fileReader.readAsArrayBuffer(currentFile);
+                });
+                 
+            }
+        }
+        this.listener();
+    }
+    listener(){
+        socket.off("popupRequest");
+        socket.on("popupRequest",outcome=>{
+            $("#popup").css("top","100px");
+            if(outcome.result)$("#popup").html("<div style='text-align:center'>Request Succesful</div>");
+            else $("#popup").html("<div style='text-align:center'>Request Unsuccesful</div>");
+            setTimeout(()=>this.destroyPopup(),2000);
+        });
+    }
+    deleteItem(){
+        socket.emit(this.socketDelete,this.ID);
+    }
+    updateItem(){
+        returnObject(object=>{
+            object["id"]=this.ID;
+            socket.emit(this.socketUpdate,object);
+        });
     }
     destroyPopup(){
-        $("#popup #exit").off("click");
         $("#popup").html("");
+        $("#popup").css("top","1px");
         $("#popup").hide();
         $("#overlay").hide();   
+        this.dash.updateAll(()=>{
+            this.dash.setView(this.dash.view);
+        });
     }
 }
 

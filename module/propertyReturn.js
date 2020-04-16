@@ -18,6 +18,30 @@ class house{
             }
         });
     }
+    removeHouse(callback){
+        let sql = `DELETE FROM houses WHERE houseID="${this.ID}"`;
+        this.connection.query(sql,(err,result)=>{
+            if(err)callback({result:false}),console.log(err);
+            else{
+                callback({result:true});
+            }
+            this.endConnection();
+        });
+    }
+    updateHouse(data,callback){
+        let sql = `
+            UPDATE houses
+            SET description = "${data['Description']}", bathrooms = "${data['Bathrooms']}",
+            beds = "${data['Beds']}", lat = "${data['Latitude']}", lon = "${data['Longitude']}",
+            price = "${data['Price']}", status = "${data["Status"]}"
+            WHERE houseID = ${this.ID} 
+        `;
+        this.connection.query(sql,(err,result)=>{
+            if(err)callback({result:false}),console.log(err);
+            else callback({result:true});
+            this.endConnection();
+        })
+    }
 }
 
 module.exports = house;

@@ -14,7 +14,7 @@ class imageManager{
     }
     getImagesData(callback){
         fs.readFile(this.propPath+"/images.json",(err,data)=>{
-            if(err)callback({outcome:false}),console.log("Error reading json "),console.error(err);
+            if(err)callback({outcome:false}),console.log("Error reading json"),console.error(err);
             else{
                 this.images = JSON.parse(data).images;
                 callback({outcome:true,data:this.images});
@@ -57,7 +57,7 @@ class imageManager{
             if(err)callback({outcome:false,reason:"errorReadingJSON"});
             else{
                 this.images = JSON.parse(data).images;
-                var thisImage = "image-"+this.images.length;
+                var thisImage = "image-"+Date.now();
                 this.writeFromBuffer(this.propPath+"/"+thisImage,image,error=>{
                     if(error)callback({outcome:false,reason:"errorSavingImage"});
                     else{
@@ -65,11 +65,27 @@ class imageManager{
                         fs.writeFile(this.propPath+"/images.json", JSON.stringify({images:this.images}),"utf8",err=>{
                             if(err)callback({outcome:false,reason:"errorWritingJSON"});
                             else{
-                                callback({outcome:true});
+                                callback({outcome:true,data:this.images});
                             }
                         });
                     }
                 });
+            }
+        });
+    }
+
+    removeIMG(arrayNum,callback){
+        this.getImagesData(result=>{
+            if(result.outcome){
+                this.images.splice(arrayNum,1);
+                fs.writeFile(this.propPath+"/images.json", JSON.stringify({images:this.images}),"utf8",err=>{
+                    if(err)callback({outcome:false,reason:"errorWritingJSON"});
+                    else{
+                        callback({outcome:true,data:this.images});
+                    }
+                });
+            }else{
+                if(err)callback(result);
             }
         });
     }

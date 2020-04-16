@@ -327,8 +327,9 @@ function addHouseImage(house,con,callback){
 
 function addNewHouse(house,callback){
     var con = newConnection();
-    let sql = `INSERT INTO houses (address, postCode, city, description, beds, bathrooms, lat, lon  )
-                VALUES ("${house.address}","${house.postCode}","${house.city}","${house.description}","${house.bedrooms}","${house.bathrooms}","${house.lat}","${house.long}")`;
+    let sql = `INSERT INTO houses (address, postCode, city, description, beds, bathrooms, lat, lon, price, status)
+                VALUES ("${house.address}","${house.postCode}","${house.city}","${house.description}","${house.bedrooms}","${house.bathrooms}","${house.lat}","${house.long}",
+                "${house.price}", "${house.status}")`;
     con.query(sql,(err,result)=>{
         if(err)con.end(),console.log(err),callback(false);
         else{
@@ -365,6 +366,35 @@ function Pdash(socket){
             }
         });
     });
+    socket.on("addImg",data=>{
+        let image = data.file;
+        let id = data.hID;
+        var imgManager = new hImagesManager(id,writeFromBuffer);
+        imgManager.getImagesData(result=>{
+            if(result.outcome){
+                imgManager.addImage(image,result2=>{
+                    socket.emit("addImgResult",{outcome:result2.outcome,imgArray:result2.data});
+                });
+            }else{
+                socket.emit("addImgResult",{outcome:false});
+            }
+        });
+    });
+    socket.on("removeImg",data=>{
+        var imgManager = new hImagesManager(data.id,writeFromBuffer);
+        imgManager.removeIMG(data.arrayNum,result=>{
+            socket.emit("removeImgResult",{outcome:result.outcome,imgArray:result.data});
+        });
+    });
+
+    socket.on("newHouseImg",data=>{
+        var imgManager = new hImagesManager(data,writeFromBuffer);
+        imgManager.init();
+        imgManager.newProperty(result=>{
+            socket.emit("newHouseImgResult",result);
+        });
+    });
+
     socket.on("newUserDash",uData=>{
         if(socketUsers[getIndex(socket.id)].permissions == "root"){
             let con = newConnection();
@@ -413,10 +443,24 @@ function Pdash(socket){
             }
         }else socket.emit("siteInfoResult",false);
     });
+    socket.on("deleteHouse",ID=>{
+        ID = parseInt(ID);
+        new propSearch(newConnection(),ID).removeHouse(outcome=>{
+            socket.emit("popupRequest",outcome);
+        });
+    });
+    socket.on("updateHouse",data=>{
+        new propSearch(newConnection(),data["id"]).updateHouse(data,outcome=>{
+            socket.emit("popupRequest",outcome);
+        });
+    });
+ 
 }
 function createHouseDB(con){
     let sql = `CREATE TABLE houses(houseID int AUTO_INCREMENT PRIMARY KEY, address varchar(255) NOT NULL UNIQUE,
-                                 postCode varchar(10) NOT NULL, city varchar(20) NOT NULL, description varchar(1000), beds int NOT NULL, bathrooms int NOT NULL, lat varchar(255), lon varchar(255))`;
+                                 postCode varchar(10) NOT NULL, city varchar(20) NOT NULL, description varchar(1000), beds int NOT NULL, bathrooms int NOT NULL, lat varchar(255), lon varchar(255),
+                                 price decimal(15,2) NOT NULL, status varchar(20)
+                                 )`;
     con.query(sql,(err,result)=>{
         if(err)throw err;
         console.log("-- Houses table created --");
@@ -484,12 +528,33 @@ function getProps(callback){
     });
 }
 
+function addPropsImages(propList,callback){
+    var results = propList;
+    var promises = [];
+    function prop(el,i){
+        return new Promise(resolve=>{
+            new hImagesManager(el.houseID).getImagesData(outcome=>{
+                if(outcome.data)results[i].image=outcome.data[0];
+                resolve();
+            });
+        });
+    }
+    results.forEach((el,i)=>{
+        promises.push(prop(el,i));
+    })
+    Promise.all(promises).then(()=>{
+        callback(results);
+    })
+}
+
 //user section
 user.on("connection",socket=>{
     socket.emit("siteDetails",site);
     socket.on("sendProps",()=>{
         getProps(results=>{
-            socket.emit("props",results);
+            addPropsImages(results,props=>{
+                socket.emit("props",props);
+            });
         });
     });
 });

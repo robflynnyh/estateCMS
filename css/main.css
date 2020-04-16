@@ -340,6 +340,7 @@ body{
     border-radius: 0.5rem;
     box-shadow: inset 1px 1px grey;
 }
+
 .contentBox .field span{
     align-self: center;
 }
@@ -419,10 +420,10 @@ body{
     width:20rem;
     overflow:hidden;
     box-shadow: 2px 2px 5px grey;
-    top:50px;
+    top:1px;
     background-color: snow;
     display: none;
-    position: fixed;
+    position: absolute;
     z-index: 3;
 
     left: calc(50% - 10rem);
@@ -452,9 +453,10 @@ body{
     max-width:100%;
     min-width: 30%;
     display: block;
-    margin: 0.5rem auto;
+    margin:auto;
     border-radius: 0.19rem;
     max-height: 250px;
+    user-select: none;
 }
 #popup .displayField{
     margin:0 auto;
@@ -466,12 +468,17 @@ body{
 }
 #popup .displayField .fname{
     font-weight: 600;
+    width: 50%;
 }
-#popup .displayField .popupInputArea{
-    resize: none;
-    border-radius: 0.5rem;
-    box-shadow: inset 1px 1px grey;
+#popup .displayField input{
+    width: 55%;
     vertical-align: middle;
+}
+#popup .displayField textarea{
+    resize: none;
+    width: 55%;
+    vertical-align: middle;
+
 }
 
 #popup #formContainer{
@@ -496,7 +503,7 @@ body{
 #popup #updateBtn:hover {
     cursor: pointer;
 }
-#popup #removeHouse {
+#popup #removeBtn {
     user-select: none;
     cursor: pointer;
     width: 4rem;
@@ -506,4 +513,25 @@ body{
     display: inline-block;
     color: white;
     font-weight: 600;
+}
+#imgTools{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    background-color: papayawhip;
+}
+#imgTools > *{
+    user-select: none;
+    display: inline-block;
+    padding: 0.3rem;
+    text-align: center;
+    cursor: pointer;
+    flex-grow: 1;
+    font-weight: 600;
+}
+#addImg{
+    background-color: aliceblue;
+}
+#removeImg{
+    background-color: lightgray;
 }
