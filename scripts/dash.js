@@ -245,3 +245,18 @@ function uPage(html,dash){
     });
 }
 
+function cPage(html,dash){
+    $(".main").html(html);
+    $("#homeTxt").val(siteInfo.homeText);
+    $("#submitDesc").click(e=>{
+        dash.newSiteInfo({image:false,name:siteInfo.name,description:siteInfo.description,homeText:$("#homeTxt").val()},result=>{
+            if(result){
+                siteInfo.homeText=$("#homeTxt").val();
+                dash.setView(3);
+            }else{
+                alert("Error updating site info");
+                dash.setView(3);
+            }
+        });
+    });
+}

@@ -1,4 +1,18 @@
 
+var customizeP = `
+<div id="manage">
+    <div id="lPanel">
+        <div class="panelHeader">Homepage Text</div>
+        <div id="customizeBox">
+            <textarea id="homeTxt" rows="15" cols="40"></textarea>
+        </div>
+        <div id="submitDesc">Submit</div>
+    </div>
+    <div id="rPanel">
+        <div class="panelHeader">Customize design</div>
+    </div>
+</div>
+`;
 var siteDetailsP = `
 <div id="siteDetails">
 <div id="lPanel">
@@ -100,6 +114,7 @@ class dashboard{
     init(){
         this.getUsers();
         this.getHouses();
+        this.getInfo();
         this.setView(this.view);
     }
     setActive(){
@@ -135,6 +150,9 @@ class dashboard{
                 hPage(housePageData,this);
                 this.setActive();
                 break;
+            case 3:
+                cPage(customizeP,this);
+                this.setActive();
         }
     }
     getHouses(callback){

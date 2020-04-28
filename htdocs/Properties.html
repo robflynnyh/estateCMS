@@ -15,10 +15,9 @@
     <div id="siteHeader">
         <div id="hContainer">
             <div id="siteImg">
-                <img src="images/logo.png">
+                <img src="images/logo.image">
             </div>
             <div id="title">
-				Withington Estate Agents
             </div>
             <div id="siteMenu">
                 <ul><li><a href="/">Home</a></li><li><a href=Properties.html>Properties</a></li></ul>
@@ -27,16 +26,22 @@
     </div>
     <div id="main">
         <div id="search">
+                <select id="sType" style="border-radius:0.3rem">
+                    <option value="rent" selected>Rent</option>
+                    <option value="buy">Buy</option>
+                </select>
                 <input type="text" id="addrSrch" class="filters" placeholder="Address">
                 <input type="text" id="pcSrch" class="filters" placeholder="Post Code">
                 <input type="text" id="citySrch" class="filters" placeholder="City">
+                <input type="number" id="minPrice" class="filters" min="0" placeholder="£/M Min">
+                <input type="number" id="maxPrice" class="filters" min="1" placeholder="£/M Max">
                 <input type="number" id="bedNum" min="1" max="20" placeholder="Beds">
                 <input type="number" id="bathNum" min="1" max="10" placeholder="Bathrooms">
-                <div id="searchBtn">Search</div>
-                <p>
                 <div id="mapToggle">
-                <input type="checkbox" id="mapCheck" value="toMap">
-                <label for="mapCheck">View on Map</label>
+                    <input type="checkbox" id="mapCheck" value="toMap">
+                    <label for="mapCheck">View on Map</label>
+                    </div>
+                <div id="searchBtn">Search</div>
         </div>
         <div id="propMap">
 

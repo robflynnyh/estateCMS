@@ -10,7 +10,13 @@ function filterProps(filters,callback){
                 if(nlp(el["city"]).has(filters["city"]) || filters["city"].length==0){
                     if(el["beds"]==filters["beds"] || filters["beds"].length==0){
                         if(el["bathrooms"]==filters["bathrooms"] || filters["bathrooms"].length==0){
-                            return el;
+                            if(el["price"]>filters["pMin"] || filters["pMin"].length==0){
+                                if(el["price"]<filters["pMax"] || filters["pMax"].length==0){
+                                    if(el["status"]==$("#sType").val()){
+                                        return el;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -99,13 +105,34 @@ function eventListerners(className,dataField){
     });
 }
 
+function loadSiteData(){
+    cli.getSiteData(result=>{
+        $("#title").text(result.name);
+    });
+}
+
 $(document).ready(()=>{
+    loadSiteData();
     initMap();
+    $("#sType").change(e=>{
+        switch($("#sType").val()){
+            case "rent":
+                $("#minPrice").attr("placeholder","£/M Min");
+                $("#maxPrice").attr("placeholder","£/M Max");
+                break;
+            case "buy":
+                $("#minPrice").attr("placeholder","£ Min");
+                $("#maxPrice").attr("placeholder","£ Max");
+                break;
+        }
+    });
     $("#searchBtn").click(event=>{
         let filter = {
             address: $("#addrSrch").val(),
             postCode: $("#pcSrch").val(),
             city: $("#citySrch").val(),
+            pMin: $("#minPrice").val(),
+            pMax: $("#maxPrice").val(),
             beds: $("#bedNum").val(),
             bathrooms: $("#bathNum").val(),
         }

@@ -3,18 +3,19 @@ var app = express();
 const mysql = require("mysql");
 const fs = require("fs");
 
-var housePage = require("./module/housePage");
-var propSearch = require("./module/propertyReturn");
-var hImagesManager = require("./module/hImageManager");
+var housePage = require("./module/housePage"); //for loading property specific page
+var propSearch = require("./module/propertyReturn"); //gets info about property when given its ID
+var hImagesManager = require("./module/hImageManager"); //saves and manages images for each property
 
-var dbAccess = 0;
+var dbAccess = 0; // dbAcess denotes what data the site has access to anything less than 2 and setup page is used instead of login
 var socketUsers = [];
-var site = {
+var site = { 
     name: "",
-    description: ""
+    description: "",
+    homeText: ""
 }
 
-var dbDetailsPage = {
+var dbDetailsPage = { //sent to client when needed
     html:"",
     scripts:["/scripts/dbSetup.js"]
 }; 
@@ -26,7 +27,7 @@ var loginPage = {
     html:"",
     scripts:["/scripts/login.js"]
 }
-var dashBoardPage = {
+var dashBoardPage = { 
     html:"",
     scripts:["/scripts/dashClient.js","/scripts/dash.js"]
 }
@@ -84,7 +85,7 @@ function testConnection(callback){
         callback();
     }
 }
-
+///////////////////////////////////////////////////////////SETUP -- all site data is read
 fs.readFile("dbCredentials.json",(er,data)=>{
     if(er)dbAccess=0;
     else{
@@ -145,7 +146,10 @@ fs.readFile("siteInfo.json","utf8",(er,data)=>{
 app.get("/admin",(req,res,nxt)=>{
     res.sendFile(__dirname+"/admin/main.html");
 });
-app.get("/property",(req,res)=>{
+app.get("/siteInfo",(req,res,nxt)=>{
+    res.sendFile(__dirname+"/siteInfo.json");
+});
+app.get("/property",(req,res)=>{ //custom page for each property generated from houseID through received from GET request
     fs.readFile(__dirname+"/serverFiles/propertyPage.html","utf8",(er,data)=>{
         if(er)res.status(404).send('Error Loading Page...'),console.error(er);
         else{
@@ -168,7 +172,7 @@ app.get("/property",(req,res)=>{
 
 });
 ///
-app.use('/css',express.static(__dirname +'/css'));
+app.use('/css',express.static(__dirname +'/css'));  
 app.use('/images',express.static(__dirname +'/images'));
 app.use('/scripts',express.static(__dirname +'/scripts'));
 app.use('/',express.static(__dirname +'/htdocs'));
@@ -194,7 +198,7 @@ function createUserTable(con,socket,userdata){
     });
 }
 
-function createUser(userData,socket){
+function createUser(userData,socket){ //creates initial user
     var con = newConnection();
     con.connect(err=>{
       if(err){
@@ -227,7 +231,7 @@ function createUser(userData,socket){
 }
 
 
-function validateEmpty(data,fieldNum){
+function validateEmpty(data,fieldNum){ //checks if anythings empty before updating files/db
     if(Object.keys(data).filter(el=>data[el].length).length != fieldNum){
         return false;
     }else{
@@ -235,7 +239,7 @@ function validateEmpty(data,fieldNum){
     }
 }
 
-function PclientDB(socket){
+function PclientDB(socket){ //sends client dbsetup page
     socket.emit("connectClient",{code:dbAccess,template:dbDetailsPage.html,scripts:dbDetailsPage.scripts});
     socket.on("setupDB",(data)=>{
         if(validateEmpty(data,5)==false){
@@ -273,15 +277,15 @@ function PrUserDB(socket){
     });
 }
 
-function getIndex(socketid){
+function getIndex(socketid){ //returns user info  stored with their socketID
     return socketUsers.findIndex(el=>el.socketID==socketid);
 }
 
-function writeFromBuffer(imgpath,imgBuff,callback){
+function writeFromBuffer(imgpath,imgBuff,callback){ //writes an image file
     fs.writeFile(imgpath,Buffer.from(imgBuff),error=>callback(error));
 }
 
-function verifyLogin(loginData,socket,callback){
+function verifyLogin(loginData,socket,callback){ //checks login details
     var con = newConnection();
     let sql = "SELECT username, permissions FROM userInfo WHERE username = '"+loginData.username+"' and password = '"+loginData.password+"'";
     con.query(sql,(err,result)=>{
@@ -423,6 +427,7 @@ function Pdash(socket){
         if(socketUsers[getIndex(socket.id)].permissions == "root"){
             site.name = data.name;
             site.description = data.description;
+            if(data.homeText)site.homeText=data.homeText;
             if(data.image){
                 writeFromBuffer("images/logo.image",data.image,err=>{
                     if(err)console.log(err),socket.emit("siteInfoResult",false);
@@ -557,4 +562,5 @@ user.on("connection",socket=>{
             });
         });
     });
+   
 });

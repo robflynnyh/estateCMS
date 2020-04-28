@@ -535,3 +535,24 @@ body{
 #removeImg{
     background-color: lightgray;
 }
+
+.panelHeader{
+    font-weight: 600;
+}
+#customizeBox{
+    margin:1rem;
+}
+#submitDesc{
+    align-self: center;
+    width: min-content;
+    height: min-content;
+    padding: 0.5rem;
+    background-color: lightgreen;
+    border-radius: 0.3rem;
+    box-shadow: 1px 1px grey;
+    user-select: none;
+    font-weight: 500;
+}
+#submitDesc:hover{
+    box-shadow:inset 1px 1px grey;
+}

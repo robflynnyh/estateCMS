@@ -15,6 +15,7 @@
     width:80%;
     min-width: max-content;
     margin:0 auto;
+    user-select: none;
 }
 #houseSlider img{
     max-height: 20rem;
@@ -40,7 +41,15 @@
 #rSlide:hover, #lSlide:hover{
     cursor: pointer;
 }
+#address{
+    text-align: center;
+    padding: 1rem;
+    font-weight: 800;
+}
 </style>
+<script>
+    var data = //[DATA]//;
+</script>
 </head>
 <body>
 <div id="pageContents">
@@ -58,6 +67,9 @@
         </div>
     </div>
     <div id="main">
+        <div id="address">
+            
+        </div>
         <div id="houseSlider">
             <div id="lSlide"><img src="images/lArrow.png"></div>
             <img src="" id="slideIMG">
@@ -67,9 +79,9 @@
     </div>
 </body>
 <script>
-    var dir = //[IMGDIR]//;
-    var images = //[IMAGELIST]//;
-    images = images.images;
+    var dir = data.dir;
+    var images = data.images;
+    $("#address").text(data.address);
     var imgI = 0;
     $("#slideIMG").attr("src",dir+images[imgI]);
     document.getElementById("rSlide").addEventListener("click",()=>{
