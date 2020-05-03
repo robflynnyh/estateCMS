@@ -65,11 +65,12 @@ function buildPropMap(filters){
     filterProps(filters,props=>{
         setupMap(props,d=>{
             map.setView([d.lat,d.lon],9);
+    
             console.log(d);
             mapItems = [];
             props.forEach(el=>{
                 let marker = L.marker([el.lat,el.lon]);
-                marker.bindPopup("<b>"+el.address+"</b>");
+                marker.bindPopup("<a href='/property?id="+el.houseID+"'><b>"+el.address+"</b></a>");
                 marker.on("click",e=>{
                     map.setView([el.lat,el.lon],14);
                 });
@@ -88,7 +89,8 @@ cli.getProperties(result=>{
 });
 
 function initMap(){
-    map = L.map("propMap").setView([0, 0], 1);
+    map = L.map("propMap");
+    
     L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
         maxZoom: 18,

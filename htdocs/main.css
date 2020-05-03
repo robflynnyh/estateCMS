@@ -2,7 +2,8 @@ body{
     font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     background-color: 	#f8f8ff;
     margin:0;
-    background-image:url("images/Mbacking.png");
+    background-image:url("images/Mbacking.image");
+
 }
 a:link {
   text-decoration: none;
@@ -267,7 +268,7 @@ a:active {
     user-select: none;
 }
 #houseSlider img{
-    max-height: 20rem;
+    height: 20rem;
 }
 #lSlide{   
     background-color:silver;

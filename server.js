@@ -6,6 +6,7 @@ const fs = require("fs");
 var housePage = require("./module/housePage"); //for loading property specific page
 var propSearch = require("./module/propertyReturn"); //gets info about property when given its ID
 var hImagesManager = require("./module/hImageManager"); //saves and manages images for each property
+var userLog = require("./module/userLogs"); //saves and manages images for each property
 
 var dbAccess = 0; // dbAcess denotes what data the site has access to anything less than 2 and setup page is used instead of login
 var socketUsers = [];
@@ -377,6 +378,7 @@ function Pdash(socket){
         imgManager.getImagesData(result=>{
             if(result.outcome){
                 imgManager.addImage(image,result2=>{
+                    new userLog(socketUsers[getIndex(socket.id)].user,"Added Image to house: "+data.hID+".").add();
                     socket.emit("addImgResult",{outcome:result2.outcome,imgArray:result2.data});
                 });
             }else{
@@ -387,6 +389,9 @@ function Pdash(socket){
     socket.on("removeImg",data=>{
         var imgManager = new hImagesManager(data.id,writeFromBuffer);
         imgManager.removeIMG(data.arrayNum,result=>{
+            if(result.outcome){
+                new userLog(socketUsers[getIndex(socket.id)].user,"Removed Image from house: "+data.hID+".").add();
+            }
             socket.emit("removeImgResult",{outcome:result.outcome,imgArray:result.data});
         });
     });
@@ -408,6 +413,7 @@ function Pdash(socket){
                     console.log(err);
                     socket.emit("newUserRequest",false);
                 }else{
+                    new userLog(socketUsers[getIndex(socket.id)].user,"Added new user: "+uData.username+" with Permissions: "+uData.permissions).add();
                     console.log("USER ADDED");
                     socket.emit("newUserRequest",true);
                 }
@@ -419,10 +425,23 @@ function Pdash(socket){
 
     socket.on("addHouse",data=>{
         addNewHouse(data,result=>{
+            if(result!=false)new userLog(socketUsers[getIndex(socket.id)].user,"Added house with address: "+data.address+".").add();
             socket.emit("addHouseResult",result);
         });
     });
-
+    socket.on("siteBackgroundUpdate",data=>{
+        if(socketUsers[getIndex(socket.id)].permissions == "root"){
+            writeFromBuffer("images/Mbacking.image",data,err=>{
+                if(err)console.log(err),socket.emit("sBresult",false);
+                else{
+                    new userLog(socketUsers[getIndex(socket.id)].user,"Updated site background image.").add();
+                    console.log("-- Site background updated --");
+                    socket.emit("sBresult",true);
+                }
+            });
+        }
+        else socket.emit("sBresult",false);
+    });
     socket.on("siteInfoUpdate",data=>{
         if(socketUsers[getIndex(socket.id)].permissions == "root"){
             site.name = data.name;
@@ -434,6 +453,7 @@ function Pdash(socket){
                     else{
                         saveSiteInfo(success=>{
                             if(success){
+                                new userLog(socketUsers[getIndex(socket.id)].user,"Updated site info.").add();
                                 console.log("-- Site info Saved --");
                                 socket.emit("siteInfoResult",true);
                             }
@@ -443,6 +463,7 @@ function Pdash(socket){
             }
             else{
                 saveSiteInfo(outcome=>{
+                    if(outcome)new userLog(socketUsers[getIndex(socket.id)].user,"Updated site info.").add();
                     socket.emit("siteInfoResult",outcome);
                 });
             }
@@ -451,15 +472,19 @@ function Pdash(socket){
     socket.on("deleteHouse",ID=>{
         ID = parseInt(ID);
         new propSearch(newConnection(),ID).removeHouse(outcome=>{
+            if(outcome.result)new userLog(socketUsers[getIndex(socket.id)].user,"Removed House: "+ID+".").add();
             socket.emit("popupRequest",outcome);
         });
     });
     socket.on("updateHouse",data=>{
         new propSearch(newConnection(),data["id"]).updateHouse(data,outcome=>{
+            if(outcome.result)new userLog(socketUsers[getIndex(socket.id)].user,"Added house: "+data["id"]+".").add();
             socket.emit("popupRequest",outcome);
         });
     });
- 
+    socket.on("uPermis",()=>{
+        socket.emit("permissions",socketUsers[getIndex(socket.id)].permissions);
+    });
 }
 function createHouseDB(con){
     let sql = `CREATE TABLE houses(houseID int AUTO_INCREMENT PRIMARY KEY, address varchar(255) NOT NULL UNIQUE,

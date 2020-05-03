@@ -1,8 +1,12 @@
 function docReady(){
     var dash = new dashboard(0);
-    $(".mItem").each((i,el)=>{
-        $(el).click(event=>{
-            dash.setView(i);
+    dash.getPermissions(perm=>{
+        if(perm!="root")dash.setView(2);
+        $(".mItem").each((i,el)=>{
+            if(perm!="root"&&i!=2)$(el).hide();
+            $(el).click(event=>{
+                dash.setView(i);
+            });
         });
     });
 }
@@ -243,6 +247,37 @@ function uPage(html,dash){
             }else $(el).hide();
         });
     });
+    $(".user").each((i,el)=>{
+        $(el).off("click");
+        $(el).click(event=>{
+            var user = $(el).data("user");
+       
+            
+            var popupOptions = {
+                info: [ //info fields
+                    {Fname:"Username",Fdata:user},
+                ],
+                passField: [ //info fields
+                    {Fname:"Password",Fdata:""},
+                ],
+                imgList:false,
+                imgPath:false,
+                ID: user,
+                socketDelete: "deleteHouse",
+                socketUpdate: "updateHouse",
+                dash: dash
+            };
+            var userPopup = new popupBox(popupOptions);
+            userPopup.createPopup();
+        });
+    
+    });
+}
+function destroyPopup(){
+    $("#popup").html("");
+    $("#popup").css("top","1px");
+    $("#popup").hide();
+    $("#overlay").hide();   
 }
 
 function cPage(html,dash){
@@ -250,13 +285,37 @@ function cPage(html,dash){
     $("#homeTxt").val(siteInfo.homeText);
     $("#submitDesc").click(e=>{
         dash.newSiteInfo({image:false,name:siteInfo.name,description:siteInfo.description,homeText:$("#homeTxt").val()},result=>{
+            $("#popup").show();
+            $("#overlay").show();
+            $("#popup").css("top","100px");
             if(result){
                 siteInfo.homeText=$("#homeTxt").val();
+                $("#popup").html("<div style='text-align:center'>Request Succesful</div>");
                 dash.setView(3);
             }else{
-                alert("Error updating site info");
+                $("#popup").html("<div style='text-align:center'>Request Unsuccesful</div>");
                 dash.setView(3);
             }
+            setTimeout(()=>destroyPopup(),2000);   
         });
+    });
+    $("#siteBackground").change(e=>{
+        currentFile = e.target.files[0];
+        var fileReader = new FileReader();
+        fileReader.onload = e =>{
+            let siteBackground = e.target.result;
+            dash.changeSiteBackground(siteBackground,result=>{
+                $("#popup").show();
+                $("#overlay").show();
+                $("#popup").css("top","100px");
+                if(result){
+                    $("#popup").html("<div style='text-align:center'>Request Succesful</div>");
+                }else{
+                    $("#popup").html("<div style='text-align:center'>Request Unsuccesful</div>");
+                }
+                setTimeout(()=>destroyPopup(),2000);   
+            });
+        }
+        fileReader.readAsArrayBuffer(currentFile);
     });
 }

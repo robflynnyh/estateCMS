@@ -10,6 +10,9 @@ var customizeP = `
     </div>
     <div id="rPanel">
         <div class="panelHeader">Customize design</div>
+        <div id="setBackground">
+        Set site background: <input type="file" id="siteBackground" class="fileUpload">
+        </div>
     </div>
 </div>
 `;
@@ -109,9 +112,11 @@ class dashboard{
         this.users = [];
         this.houses = [];
         this.listeners = [];
+        this.permissions = undefined;
         this.init();
     }
     init(){
+        this.getPermissions();
         this.getUsers();
         this.getHouses();
         this.getInfo();
@@ -146,8 +151,9 @@ class dashboard{
                 this.setActive();
                 break;
             case 2:
-                this.getHouses();
-                hPage(housePageData,this);
+                this.getHouses(done=>{
+                    hPage(housePageData,this);
+                });
                 this.setActive();
                 break;
             case 3:
@@ -217,6 +223,25 @@ class dashboard{
         socket.emit("siteInfoUpdate",data);
         socket.off("siteInfoResult");
         socket.on("siteInfoResult",result=>{
+            callback(result);
+        });
+    }
+    getPermissions(callback){
+        if(this.permissions==undefined){
+            socket.emit("uPermis");
+            socket.off("permissions");
+            socket.on("permissions",result=>{
+                this.permissions = result;
+                if(callback)callback(this.permissions);
+            });
+        }else{
+            if(callback)callback(this.permissions);
+        }
+    }
+    changeSiteBackground(data,callback){
+        socket.emit("siteBackgroundUpdate",data);
+        socket.off("sBresult");
+        socket.on("sBresult",result=>{
             callback(result);
         });
     }
@@ -302,6 +327,15 @@ class popupBox{
                     </div> 
                 `;
             });
+        }
+        if(this.passField){
+            this.passField.forEach(el=>{
+                this.html+= `
+                    <div class="displayField">
+                    <span class="fname" style="align-self: center;">${el.Fname}:</span> <input class="popupInputArea" type="password" name="${el.fname}" value="${el.Fdata}">
+                    </div> 
+                `;
+            })
         }
         if(this.numFields){
             this.numFields.forEach(el=>{

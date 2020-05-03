@@ -18,6 +18,18 @@ class house{
             }
         });
     }
+    getID(callback){
+        let sql = `SELECT houseID FROM houses WHERE address = "${house.ID}" `;
+        this.connection.query(sql,(err,result)=>{
+            if(err)console.error(err),callback({result:false});
+            else{
+                if(result.length==0)callback({result:false});
+                else{
+                    callback({result:true,data:result});
+                }
+            }
+        });
+    }
     removeHouse(callback){
         let sql = `DELETE FROM houses WHERE houseID="${this.ID}"`;
         this.connection.query(sql,(err,result)=>{
