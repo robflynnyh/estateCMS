@@ -1,12 +1,38 @@
+var contactToggle = false;
 window.onload = () => {
     let cli = new client();
     cli.getSiteData(result=>{
         console.log(result);
         $("#title").text(result.name);  
         $("#homeText").text(result.homeText);
+        contactBtn(result);
     });
     cli.getProperties(result=>{ 
         getImageList(result).then(hData=>addSlider(hData)); //creates a array of data for the slider
+    });
+}
+function contactBtn(siteData){
+    $("#contactButton").click(e=>{
+        switch(contactToggle){
+            case false:
+                let html = `
+                <span>Contact Details</span>
+                <hr />
+                <div id="cDetails">
+                <div><b>Phone Number:</b> ${siteData.num}</div>
+                <div><b>Email: </b>${siteData.email}</div>
+                </div>
+                `;
+                $("#contactButton").html(html);
+                $("#contactButton").animate({bottom:"0px",height:"250px"}, "medium");
+                contactToggle=true;
+                break;
+            case true:
+                $("#contactButton").html("<span>Contact Details</span>");
+                $("#contactButton").animate({bottom:"0px",height:"20px"}, "medium");
+                contactToggle=false;
+                break;
+        }
     });
 }
 function addSlider(data){

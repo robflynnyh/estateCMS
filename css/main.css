@@ -1,6 +1,5 @@
 body{
     font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-    background-color: 	#f8f8ff;
     margin:0;
     height: 100%;
     width: 100%;
@@ -561,4 +560,23 @@ body{
     justify-content: space-evenly;
     margin: 1rem;
     padding: 1rem;
+}
+#bgFieldSbmt{
+    background-color: lightgreen;
+    border-radius: 0.2rem;
+    padding: 0.4rem;
+    margin-left: 0.4rem;
+    box-shadow: 1px 1px 1px grey;
+    user-select: none;
+    cursor: pointer;
+}
+#bgFieldSbmt:hover{
+    box-shadow: 1px 1px 1px transparent;
+}
+#bColorField{
+    height: min-content;
+    align-self: center;
+}
+#setBackground span{
+    align-self: center;
 }

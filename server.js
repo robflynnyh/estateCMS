@@ -158,7 +158,7 @@ app.get("/property",(req,res)=>{ //custom page for each property generated from 
             prop.getData(outcome=>{
                 console.log(outcome);
                 if(outcome.result){
-                    new housePage(data,outcome.data[0],html=>{
+                    new housePage(data,outcome.data[0],site,html=>{
                         res.send(html);
                         res.end();
                     });
@@ -422,7 +422,33 @@ function Pdash(socket){
             socket.emit("newUserRequest",false);
         }
     });
-
+    socket.on("deleteUser",uname=>{
+        if(socketUsers[getIndex(socket.id)].permissions == "root" && socketUsers[getIndex(socket.id)].user != uname){
+            let con = newConnection();
+            let sql = `DELETE FROM userInfo WHERE username="${uname}"`;
+            con.query(sql,(err,result)=>{
+                if(err)socket.emit("popupRequest",{result:false});
+                else{
+                    new userLog(socketUsers[getIndex(socket.id)].user,"Deleted user: "+uname).add();
+                    socket.emit("popupRequest",{result:true});
+                }
+            });
+        }else socket.emit("popupRequest",{result:false});
+    });
+    socket.on("updateUser",data=>{
+        console.log(data)
+        if(socketUsers[getIndex(socket.id)].permissions == "root" || socketUsers[getIndex(socket.id)].user == data.id){
+            let con = newConnection();
+            let sql = `UPDATE userInfo SET password="${data.Password}" WHERE username="${data.id}"`;
+            con.query(sql,(err,result)=>{
+                if(err)socket.emit("popupRequest",{result:false}),console.error(err);
+                else{
+                    new userLog(socketUsers[getIndex(socket.id)].user,"Updated password of user: "+data.id).add();
+                    socket.emit("popupRequest",{result:true});
+                }
+            })
+        }
+    });
     socket.on("addHouse",data=>{
         addNewHouse(data,result=>{
             if(result!=false)new userLog(socketUsers[getIndex(socket.id)].user,"Added house with address: "+data.address+".").add();
@@ -430,22 +456,54 @@ function Pdash(socket){
         });
     });
     socket.on("siteBackgroundUpdate",data=>{
-        if(socketUsers[getIndex(socket.id)].permissions == "root"){
-            writeFromBuffer("images/Mbacking.image",data,err=>{
-                if(err)console.log(err),socket.emit("sBresult",false);
-                else{
-                    new userLog(socketUsers[getIndex(socket.id)].user,"Updated site background image.").add();
-                    console.log("-- Site background updated --");
-                    socket.emit("sBresult",true);
-                }
-            });
+        if(socketUsers[getIndex(socket.id)].permissions == "root" || socketUsers[getIndex(socket.id)].permissions == "2"){
+            if(data.image){
+                var image = data.image;
+                fs.readFile(__dirname+"/htdocs/main.css","utf8",(er,css)=>{
+                    if(er) socket.emit("sBresult",false);
+                    else{
+                        let code = `body{background-image:url("images/Mbacking.image");}`;
+                        css = code + css.substring(css.indexOf("}"),css.length);
+                        fs.writeFile(__dirname+"/htdocs/main.css",css,"utf8",(er,data)=>{
+                            if(er)socket.emit("sBresult",false);
+                            else{
+                                writeFromBuffer("images/Mbacking.image",image,err=>{
+                                    if(err)console.log(err),socket.emit("sBresult",false);
+                                    else{
+                                        new userLog(socketUsers[getIndex(socket.id)].user,"Updated site background image.").add();
+                                        console.log("-- Site background updated --");
+                                        socket.emit("sBresult",true);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            }else{
+                var bgColor = data.color;
+                fs.readFile(__dirname+"/htdocs/main.css","utf8",(er,css)=>{
+                    if(er) socket.emit("sBresult",false);
+                    else{
+                        let code = `body{background-color:${bgColor};}`;
+                        css = code + css.substring(css.indexOf("}"),css.length);
+                        fs.writeFile(__dirname+"/htdocs/main.css",css,"utf8",(er,data)=>{
+                            if(er)socket.emit("sBresult",false);
+                            else{
+                                socket.emit("sBresult",true);
+                            }
+                        });
+                    }
+                });
+            }
         }
         else socket.emit("sBresult",false);
     });
     socket.on("siteInfoUpdate",data=>{
-        if(socketUsers[getIndex(socket.id)].permissions == "root"){
+        if(socketUsers[getIndex(socket.id)].permissions == "root" || socketUsers[getIndex(socket.id)].permissions == "2"){
             site.name = data.name;
             site.description = data.description;
+            site.num = data.num;
+            site.email = data.email;
             if(data.homeText)site.homeText=data.homeText;
             if(data.image){
                 writeFromBuffer("images/logo.image",data.image,err=>{

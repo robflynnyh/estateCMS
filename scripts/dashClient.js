@@ -13,6 +13,9 @@ var customizeP = `
         <div id="setBackground">
         Set site background: <input type="file" id="siteBackground" class="fileUpload">
         </div>
+        <div id="backgroundType">
+        Use a plain colour for background? <input type="checkbox" id="backColor">
+        </div>
     </div>
 </div>
 `;
@@ -31,6 +34,14 @@ var siteDetailsP = `
         <span class="formText">Site Description:</span>
         <span class="formInput"><input type="text" id="siteDesc" value="//[SITEDESC]//"></span>
     </div>
+    <div class="formElement">
+    <span class="formText">Site Contact Number:</span>
+    <span class="formInput"><input type="text" id="siteNum" value="//[SITEDESC]//"></span>
+    </div>
+    <div class="formElement">
+    <span class="formText">Site Email:</span>
+    <span class="formInput"><input type="text" id="siteEmail" value="//[SITEDESC]//"></span>
+</div>
     <div class="formElement">
         <span class="formText">Site Logo:</span>
         <span class="formInput"><input type="file" id="siteLogo" class="fileUpload"></span>
@@ -56,6 +67,7 @@ var userPage = `
         <div class="field"><span>Permissions:</span>
         <select id="permis">
             <option value="1">1</option>
+            <option value="2">2</option>
             <option value="root">Root</option>
         </select>
         </div>
@@ -176,7 +188,13 @@ class dashboard{
 
     getInfo(){
         siteDetailsPdata = siteDetailsP.replace("//[SITENAME]//",siteInfo.name);
+        siteDetailsPdata = siteDetailsPdata.replace("undefined","");
         siteDetailsPdata = siteDetailsPdata.replace("//[SITEDESC]//",siteInfo.description);
+        siteDetailsPdata = siteDetailsPdata.replace("undefined","");
+        siteDetailsPdata = siteDetailsPdata.replace("//[SITEDESC]//",siteInfo.num);
+        siteDetailsPdata = siteDetailsPdata.replace("undefined","");
+        siteDetailsPdata = siteDetailsPdata.replace("//[SITEDESC]//",siteInfo.email);
+        siteDetailsPdata = siteDetailsPdata.replace("undefined","");
     }
     getUsers(callback){
         if(userPageData==""){userPageData = userPage.replace("//[USERS]//","");}
@@ -285,7 +303,6 @@ function returnObject(callback){ //builds object using fieldnames and values
 //constructor(displayData,editFields,numFields,dropdown,imagesPath,imageList,identifier,socketDelete,socketUpdate,dash,currentImage){
 class popupBox{
     constructor(options){
-
         this.currentImage = 0;
         Object.keys(options).forEach(el=>{
             this[el] = options[el];
@@ -332,7 +349,7 @@ class popupBox{
             this.passField.forEach(el=>{
                 this.html+= `
                     <div class="displayField">
-                    <span class="fname" style="align-self: center;">${el.Fname}:</span> <input class="popupInputArea" type="password" name="${el.fname}" value="${el.Fdata}">
+                    <span class="fname" style="align-self: center;">${el.Fname}:</span> <input class="popupInputArea" type="password" name="${el.Fname}" value="${el.Fdata}">
                     </div> 
                 `;
             })

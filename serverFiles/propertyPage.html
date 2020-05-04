@@ -56,10 +56,10 @@
     <div id="siteHeader">
         <div id="hContainer">
             <div id="siteImg">
-                <img src="images/logo.png">
+                <img src="/images/logo.image">
             </div>
             <div id="title">
-				Withington Estate Agents
+				
             </div>
             <div id="siteMenu">
                 <ul><li><a href="/">Home</a></li><li><a href=Properties.html>Properties</a></li></ul>
@@ -79,6 +79,7 @@
     </div>
 </body>
 <script>
+    $("#title").text(data.siteInfo.name);
     var dir = data.dir;
     var images = data.images;
     $("#address").text(data.address);

@@ -3,7 +3,8 @@ function docReady(){
     dash.getPermissions(perm=>{
         if(perm!="root")dash.setView(2);
         $(".mItem").each((i,el)=>{
-            if(perm!="root"&&i!=2)$(el).hide();
+            if(perm!="root" && perm!="2"&&i!=2)$(el).hide();
+            if(perm==2 && i==1)$(el).hide();
             $(el).click(event=>{
                 dash.setView(i);
             });
@@ -175,13 +176,17 @@ function siteInfoPage(html,dash){
     $(".formBtn").click(event=>{
         var sName = $("#siteName").val();
         var sDesc = $("#siteDesc").val();
+        var snum=$("#siteNum").val();
+        var sEmail=$("#siteEmail").val();
         if(currentFile){
             fileReader.onload = e =>{
                 let siteLogo = e.target.result;
-                dash.newSiteInfo({image:siteLogo,name:sName,description:sDesc},result=>{
+                dash.newSiteInfo({image:siteLogo,name:sName,description:sDesc,num:snum,email:sEmail},result=>{
                     if(result){
                         siteInfo.name = sName;
                         siteInfo.description = sDesc;
+                        siteInfo.num = snum;
+                        siteInfo.email=sEmail;
                         dash.setView(0);
                     }else{
                         alert("Error updating site info");
@@ -193,10 +198,12 @@ function siteInfoPage(html,dash){
             }
             fileReader.readAsArrayBuffer(currentFile);
         }else{
-            dash.newSiteInfo({image:false,name:sName,description:sDesc},result=>{
+            dash.newSiteInfo({image:false,name:sName,description:sDesc,num:snum,email:sEmail},result=>{
                 if(result){
                     siteInfo.name = sName;
                     siteInfo.description = sDesc;
+                    siteInfo.num = snum;
+                    siteInfo.email=sEmail;
                     dash.setView(0);
                 }else{
                     alert("Error updating site info");
@@ -263,8 +270,8 @@ function uPage(html,dash){
                 imgList:false,
                 imgPath:false,
                 ID: user,
-                socketDelete: "deleteHouse",
-                socketUpdate: "updateHouse",
+                socketDelete: "deleteUser",
+                socketUpdate: "updateUser",
                 dash: dash
             };
             var userPopup = new popupBox(popupOptions);
@@ -299,12 +306,45 @@ function cPage(html,dash){
             setTimeout(()=>destroyPopup(),2000);   
         });
     });
+    backgroundImageListener(dash);
+    $("#backColor").change(e=>{
+        if($("#backColor").is(":checked")){
+            let html = `
+            <span>Set site background:</span> <input type="text" id="bColorField" placeholder="Colour"><div id="bgFieldSbmt">Update</div>
+            `;
+            $("#setBackground").html(html);
+            backgroundColorListener(dash);
+        }else{
+            let html=`
+            Set site background: <input type="file" id="siteBackground" class="fileUpload">
+            `;
+            $("#setBackground").html(html);
+            backgroundImageListener(dash);
+        }
+    });
+}
+function backgroundColorListener(dash){
+    $("#bgFieldSbmt").click(e=>{
+        dash.changeSiteBackground({color:$("#bColorField").val()},result=>{
+            $("#popup").show();
+            $("#overlay").show();
+            $("#popup").css("top","100px");
+            if(result){
+                $("#popup").html("<div style='text-align:center'>Request Succesful</div>");
+            }else{
+                $("#popup").html("<div style='text-align:center'>Request Unsuccesful</div>");
+            }
+            setTimeout(()=>destroyPopup(),2000);   
+        });
+    });
+}
+function backgroundImageListener(dash){
     $("#siteBackground").change(e=>{
         currentFile = e.target.files[0];
         var fileReader = new FileReader();
         fileReader.onload = e =>{
             let siteBackground = e.target.result;
-            dash.changeSiteBackground(siteBackground,result=>{
+            dash.changeSiteBackground({image:siteBackground},result=>{
                 $("#popup").show();
                 $("#overlay").show();
                 $("#popup").css("top","100px");

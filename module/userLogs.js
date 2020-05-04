@@ -11,11 +11,11 @@ class userLogs{
     }
     check(done){
         fs.readFile(this.propPath,(er,Data)=>{
-            var data = JSON.parse(Data);
             if(er){
                 done();
             }
             else{
+                var data = JSON.parse(Data);
                 this.logs=data;
                 done();
             }

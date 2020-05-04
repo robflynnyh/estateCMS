@@ -1,11 +1,12 @@
 var hImagesManager = require("./hImageManager");
 class page{
-    constructor(html,data,callback){
+    constructor(html,data,siteInfo,callback){
         this.html = html;
         this.data = data;
         this.callback = callback;
         this.images = [];
         this.buildPage();
+        this.siteInfo = siteInfo;
     }   
     buildPage(){
         var thishouse = new hImagesManager(this.data.houseID);
@@ -16,7 +17,8 @@ class page{
                 let data = {
                     images:this.images,
                     dir: "images/houses/house"+this.data.houseID+"/",
-                    address:this.data.address
+                    address:this.data.address,
+                    siteInfo:this.siteInfo
                 };
                 this.html = this.html.replace("//[DATA]//",JSON.stringify(data));
                 this.callback(this.html);
