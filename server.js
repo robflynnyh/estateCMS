@@ -463,7 +463,7 @@ function Pdash(socket){
                     if(er) socket.emit("sBresult",false);
                     else{
                         let code = `body{background-image:url("images/Mbacking.image");}`;
-                        css = code + css.substring(css.indexOf("}"),css.length);
+                        css = code + css.substring(css.indexOf("}")+1,css.length);
                         fs.writeFile(__dirname+"/htdocs/main.css",css,"utf8",(er,data)=>{
                             if(er)socket.emit("sBresult",false);
                             else{
@@ -485,7 +485,7 @@ function Pdash(socket){
                     if(er) socket.emit("sBresult",false);
                     else{
                         let code = `body{background-color:${bgColor};}`;
-                        css = code + css.substring(css.indexOf("}"),css.length);
+                        css = code + css.substring(css.indexOf("}")+1,css.length);
                         fs.writeFile(__dirname+"/htdocs/main.css",css,"utf8",(er,data)=>{
                             if(er)socket.emit("sBresult",false);
                             else{

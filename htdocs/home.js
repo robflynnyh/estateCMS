@@ -12,6 +12,11 @@ window.onload = () => {
     });
 }
 function contactBtn(siteData){
+    if(siteData.num == undefined && siteData.email == undefined)$("#contactButton").hide();
+    let num ="";
+    let email ="";
+    if(siteData.num!=undefined)num="<b>Phone Number:</b> "+siteData.num;
+    if(siteData.email!=undefined)email="<b>Email: </b>"+siteData.email;
     $("#contactButton").click(e=>{
         switch(contactToggle){
             case false:
@@ -19,12 +24,12 @@ function contactBtn(siteData){
                 <span>Contact Details</span>
                 <hr />
                 <div id="cDetails">
-                <div><b>Phone Number:</b> ${siteData.num}</div>
-                <div><b>Email: </b>${siteData.email}</div>
+                <div>${num}</div>
+                <div>${email}</div>
                 </div>
                 `;
                 $("#contactButton").html(html);
-                $("#contactButton").animate({bottom:"0px",height:"250px"}, "medium");
+                $("#contactButton").animate({bottom:"0px",height:"200px"}, "medium");
                 contactToggle=true;
                 break;
             case true:

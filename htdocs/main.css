@@ -1,4 +1,4 @@
-body{background-image:url("images/Mbacking.image");}}}}}}}}}
+body{background-image:url("images/Mbacking.image");}
 /*Dont move top line*/
 body{
     font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
@@ -308,7 +308,7 @@ a:active {
     bottom: 0;
     right: 5rem;
     padding: 0.5rem;
-    background-color: rgba(240, 248, 255, 1);
+    background-color: white;
     border-radius: 0.4rem 0.4rem 0rem 0rem;
     border: 1px solid lightgray;
     box-shadow: inset 0px 0px 1px grey;
@@ -340,7 +340,4 @@ a:active {
 #contactButton #cDetails > *{
     margin-top: 1rem;
     margin-bottom: 1rem;
-}
-#contactButton:hover{
-    background-color: rgba(240, 248, 255,1);
 }
